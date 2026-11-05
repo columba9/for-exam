@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="学习仪表盘">
+<meta name="theme-color" content="#D2E1EC">
+<title>学习仪表盘</title>
+<style>
+  :root {
+    --text: #4A4F42;        /* 主文字 */
+    --text-soft: #6A6F62;   /* 次要文字 */
+    --accent: #F9A282;      /* 强调色：按钮、进度条、选中 */
+    --accent-soft: #FCDACC; /* 强调色浅版：标签底色 */
+    --accent-deep: #B5532F; /* 深橙：需要橙色文字时用 */
+    --side: #D2E1EC;        /* 侧边栏 */
+    --bg: #E6EEF4;          /* 主背景 */
+    --card: #F4F8FB;        /* 卡片 */
+    --line: #C5D4DF;        /* 边框 */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text); background: var(--bg);
+    -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { border: none; background: none; cursor: pointer; touch-action: manipulation; }
+  [hidden] { display: none !important; }
+
+  .app { display: flex; height: 100vh; height: 100dvh; }
+
+  /* ---------- 侧边栏 ---------- */
+  .side {
+    width: 210px; flex-shrink: 0; background: var(--side);
+    display: flex; flex-direction: column;
+    padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  }
+  .brand { font-size: 20px; font-weight: 700; padding: 8px 12px 20px; }
+  .nav { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+  .nav-btn {
+    display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 14px;
+    border-radius: 12px; font-size: 17px; text-align: left; -webkit-user-select: none; user-select: none;
+  }
+  .nav-btn:active { background: rgba(74,79,66,.08); }
+  .nav-btn.active { background: var(--accent); font-weight: 600; }
+  .ico { width: 24px; text-align: center; font-size: 20px; }
+  .label { flex: 1; }
+  .badge { font-size: 13px; min-width: 24px; padding: 2px 7px; border-radius: 10px; background: rgba(74,79,66,.1); text-align: center; }
+  .nav-btn.active .badge { background: rgba(255,255,255,.5); }
+  .side-foot { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .foot-btn { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 10px; font-size: 15px; text-align: left; }
+  .foot-btn:active { background: rgba(74,79,66,.08); }
+  .backup-hint { font-size: 12px; color: var(--text-soft); padding: 2px 14px 0; }
+
+  /* ---------- 主区域 ---------- */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .head, .toolbar { width: 100%; max-width: 948px; margin: 0 auto; padding-left: 24px; padding-right: calc(24px + env(safe-area-inset-right)); }
+  .head { display: flex; align-items: center; gap: 12px; padding-top: calc(22px + env(safe-area-inset-top)); padding-bottom: 14px; }
+  .head h1 { flex: 1; font-size: 26px; }
+  .add-btn { height: 44px; padding: 0 20px; border-radius: 22px; background: var(--accent); font-size: 16px; font-weight: 600; }
+  .add-btn:active { filter: brightness(.94); }
+  .toolbar { padding-bottom: 12px; }
+  .search {
+    width: 100%; height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: var(--card); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .search:focus { border-color: var(--accent); }
+  .list {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 4px calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) 24px;
+  }
+  .list > * { max-width: 900px; margin-left: auto; margin-right: auto; }
+
+  /* ---------- 列表条目 ---------- */
+  .item {
+    display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 14px 16px; margin-bottom: 10px;
+    background: var(--card); border-radius: 14px; box-shadow: 0 1px 3px rgba(74,79,66,.08); cursor: pointer;
+  }
+  .item:active { background: #EDF3F8; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-line { display: flex; align-items: baseline; gap: 10px; }
+  .item-line .item-title { flex: 1; }
+  .item-title { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item-title.wrap { white-space: normal; word-break: break-word; }
+  .item-sub { margin-top: 4px; font-size: 14px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .warn { color: var(--accent-deep); font-weight: 600; }
+  .item.urgent { box-shadow: inset 4px 0 0 var(--accent), 0 1px 3px rgba(74,79,66,.08); }
+  .empty { padding: 70px 0; text-align: center; color: var(--text-soft); font-size: 16px; line-height: 1.8; }
+
+  /* 进度 */
+  .pct { font-size: 15px; font-weight: 700; }
+  .bar { height: 8px; margin-top: 10px; border-radius: 4px; background: var(--side); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 4px; background: var(--accent); transition: width .25s; }
+  .stepper { display: flex; gap: 8px; }
+  .round-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); font-size: 22px; line-height: 44px; text-align: center; }
+  .round-btn:active { background: var(--accent-soft); }
+
+  /* 待办 */
+  .check { flex-shrink: 0; width: 44px; height: 44px; margin: -8px -4px -8px -8px; display: grid; place-items: center; }
+  .check::before {
+    content: ""; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--accent);
+    box-sizing: border-box; display: grid; place-items: center; font-size: 15px; font-weight: 700;
+  }
+  .check.on::before { content: "✓"; background: var(--accent); }
+  .item.done { opacity: .55; }
+  .item.done .item-title { text-decoration: line-through; }
+
+  /* 笔记 */
+  .preview {
+    margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--text-soft); word-break: break-word;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .tag { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--text); font-size: 13px; }
+
+  /* 收藏 */
+  .fav { flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); display: grid; place-items: center; font-weight: 700; font-size: 17px; }
+  .icon-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; color: var(--text-soft); }
+  .icon-btn:active { background: var(--bg); }
+
+  /* 倒计时 */
+  .cd { flex-shrink: 0; display: flex; align-items: baseline; gap: 4px; font-size: 14px; color: var(--text-soft); }
+  .cd b { font-size: 28px; color: var(--accent-deep); }
+  .item.today { background: var(--accent-soft); }
+  .item.today .cd b { font-size: 20px; }
+  .item.past { opacity: .7; }
+  .item.past .cd b { color: var(--text-soft); }
+
+  /* ---------- 弹窗 ---------- */
+  .mask {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 10;
+    display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(74,79,66,.35);
+  }
+  .mask.show { display: flex; }
+  .sheet {
+    width: 100%; max-width: 540px; max-height: 100%; overflow-y: auto; padding: 22px;
+    border-radius: 18px; background: var(--card); box-shadow: 0 10px 40px rgba(74,79,66,.25);
+  }
+  .sheet h2 { font-size: 20px; margin-bottom: 16px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; margin-bottom: 6px; font-size: 14px; color: var(--text-soft); }
+  .field input, .field textarea {
+    width: 100%; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 10px;
+    background: var(--bg); font-size: 17px; outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .field input { height: 46px; }
+  .field input[type="date"] { display: block; line-height: 46px; text-align: left; }
+  .field input::-webkit-date-and-time-value { text-align: left; }
+  .field textarea { min-height: 220px; padding: 12px; line-height: 1.6; resize: vertical; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .spacer { flex: 1; }
+  .btn { height: 44px; padding: 0 20px; border-radius: 22px; font-size: 16px; font-weight: 600; }
+  .btn-main { background: var(--accent); }
+  .btn-ghost { background: var(--bg); }
+  .btn-del { color: var(--accent-deep); padding: 0 8px; }
+
+  /* 分屏变窄时：侧边栏只显示图标 */
+  @media (max-width: 640px) {
+    .side { width: 72px; padding-left: calc(8px + env(safe-area-inset-left)); padding-right: 8px; }
+    .brand, .label, .badge, .backup-hint { display: none; }
+    .nav-btn, .foot-btn { justify-content: center; padding: 0; }
+    .head, .toolbar { padding-left: 16px; padding-right: 16px; }
+    .list { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">📚 学习仪表盘</div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <button class="foot-btn" id="exportBtn"><span class="ico">📤</span><span class="label">导出备份</span></button>
+      <button class="foot-btn" id="importBtn"><span class="ico">📥</span><span class="label">导入备份</span></button>
+      <div class="backup-hint" id="backupHint"></div>
+      <input type="file" id="fileInput" accept=".json,application/json" hidden>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="head">
+      <h1 id="title"></h1>
+      <button class="add-btn" id="addBtn">＋ 新建</button>
+    </header>
+    <div class="toolbar" id="toolbar" hidden>
+      <input class="search" id="search" type="search" placeholder="搜索标题、内容或分类">
+    </div>
+    <div class="list" id="list"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask">
+  <form class="sheet" id="sheet" novalidate autocomplete="off">
+    <h2 id="sheetTitle"></h2>
+    <div id="fields"></div>
+    <div class="actions">
+      <button type="button" class="btn btn-del" id="delBtn">删除</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-ghost" id="cancelBtn">取消</button>
+      <button type="submit" class="btn btn-main">保存</button>
+    </div>
+  </form>
+</div>
+
+<script>
+const KEY = 'study-dashboard-v1';
+const $ = id => document.getElementById(id);
+const listEl = $('list'), searchEl = $('search');
+
+/* ---------- 小工具 ---------- */
+const pad = n => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtNum = n => Number.isInteger(n) ? n : +n.toFixed(2);
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function daysFromToday(s) {           // 正数=未来，0=今天，负数=已过去
+  const [y, m, d] = String(s).split('-').map(Number);
+  const t = new Date();
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000);
+}
+function fmtDate(s) {
+  const [y, m, d] = String(s).split('-').map(Number);
+  return `${y}年${m}月${d}日 周${'日一二三四五六'[new Date(y, m - 1, d).getDay()]}`;
+}
+function fmtTime(ts) {
+  const d = new Date(ts), now = new Date();
+  const md = `${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return d.getFullYear() === now.getFullYear() ? md : `${d.getFullYear()}年${md}`;
+}
+function normalizeUrl(s) {            // 只允许 http/https 链接
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = 'https://' + s;
+  try { const u = new URL(s); return /^https?:$/.test(u.protocol) ? u.href : null; } catch { return null; }
+}
+function hostOf(u) { try { return new URL(u).host; } catch { return u; } }
+
+/* ---------- 数据存取 ---------- */
+const emptyDB = () => ({ progress: [], notes: [], todos: [], bookmarks: [], countdowns: [] });
+function normalize(d) {
+  const out = emptyDB();
+  if (d && typeof d === 'object') {
+    for (const k in out) {
+      if (Array.isArray(d[k])) out[k] = d[k].filter(x => x && typeof x === 'object').map(x => ({ ...x, id: String(x.id || uid()) }));
+    }
+  }
+  return out;
+}
+let db;
+try { db = normalize(JSON.parse(localStorage.getItem(KEY))); } catch { db = emptyDB(); }
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch (e) { alert('保存失败，建议马上导出备份。\n' + e.message); }
+}
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+/* ---------- 各模块定义 ---------- */
+function sortTodos(a, b) {
+  if (!!a.done !== !!b.done) return a.done ? 1 : -1;                  // 未完成在前
+  if (a.done) return (b.updated || 0) - (a.updated || 0);              // 已完成：最近完成的在前
+  if (!!a.due !== !!b.due) return a.due ? -1 : 1;                      // 有截止日期的在前
+  return String(a.due || '').localeCompare(String(b.due || '')) || (a.created || 0) - (b.created || 0);
+}
+
+const TABS = {
+  progress: {
+    name: '学习进度', icon: '📊',
+    fields: [
+      { key: 'name', label: '科目', required: true, placeholder: '例如：运动控制系统' },
+      { key: 'current', label: '已完成', type: 'number', placeholder: '0' },
+      { key: 'total', label: '总量', type: 'number', required: true, placeholder: '例如：12' },
+      { key: 'unit', label: '单位', placeholder: '章 / 节 / 页 / 课时' },
+    ],
+    check(d) {
+      if (!(d.total > 0)) return '总量要大于 0';
+      if (!(d.current >= 0)) return '已完成不能是负数';
+      d.current = Math.min(d.current, d.total);
+    },
+    badge: list => list.length,
+    prepare: list => list,
+    row(it) {
+      const total = +it.total || 0, c = +it.current || 0;
+      const p = total ? Math.min(100, Math.round(c / total * 100)) : 0;
+      return `<div class="item" data-id="${esc(it.id)}">
+        <div class="item-body">
+          <div class="item-line"><span class="item-title">${esc(it.name)}</span><span class="pct">${p}%</span></div>
+          <div class="bar"><i style="width:${p}%"></i></div>
+          <div class="item-sub">${fmtNum(c)} / ${fmtNum(total)} ${esc(it.unit || '')}${p >= 100 ? ' · 已完成 🎉' : ''}</div>
+        </div>
+        <div class="stepper">
+          <button class="round-btn" data-act="dec" aria-label="减一">−</button>
+          <button class="round-btn" data-act="inc" aria-label="加一">＋</button>
+        </div>
+      </div>`;
+    },
+  },
+
+  notes: {
+    name: '笔记', icon: '📝',
+    fields: [
+      { key: 'title', label: '标题', required: true },
+      { key: 'tag', label: '分类', placeholder: '可选，例如：电力电子' },
+      { key: 'content', label: '内容', type: 'textarea', placeholder: '写点什么…' },
+    ],
+    badge: list => list.length,
+    prepare(list) {
+      const q = searchEl.value.trim().toLowerCase();
+      return list
+        .filter(n => !q || [n.title, n.content, n.tag].some(s => String(s || '').toLowerCase().includes(q)))
+        .sort((a, b) => (b.updated || 0) - (a.updated || 0));
+    },
+    row(it) {
+      return `<div class="item" data-id="${esc(it.id)}"><div class="item-body">
+        <div class="item-title">${esc(it.title)}</div>
+        ${it.content ? `<div class="preview">${esc(String(it.content).slice(0, 200))}</div>` : ''}
+        <div class="item-sub">${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ''}${fmtTime(it.updated || it.created || Date.now())}</div>
+      </div></div>`;
+    },
+  },
+
+  todos: {
+    name: '待办', icon: '✅',
+    fields: [
+      { key: 'text', label: '要做的事', required: true },
+      { key: 'due', label: '截止日期（可选）', type: 'date' },
+    ],
+    badge: list => list.filter(t => !t.done).length,
+    prepare: list => list.sort(sortTodos),
+    row(it) {
+      let sub = '', urgent = false;
+      if (it.due) {
+        const n = daysFromToday(it.due);
+        let txt;
+        if (it.done) txt = `截止 ${esc(it.due)}`;
+        else if (n < 0) { txt = `已逾期 ${-n} 天`; urgent = true; }
+        else if (n === 0) { txt = '今天截止'; urgent = true; }
+        else if (n <= 2) { txt = `${n} 天后截止`; urgent = true; }
+        else txt = `截止 ${esc(it.due)} · 还有 ${n} 天`;
+        sub = `<div class="item-sub ${urgent ? 'warn' : ''}">${txt}</div>`;
+      }
+      return `<div class="item ${it.done ? 'done' : ''} ${urgent ? 'urgent' : ''}" data-id="${esc(it.id)}">
+        <button class="check ${it.done ? 'on' : ''}" data-act="toggle" aria-label="标记完成"></button>
+        <div class="item-body"><div class="item-title wrap">${esc(it.text)}</div>${sub}</div>
+      </div>`;
+    },
+  },
+
+  bookmarks: {
+    name: '收藏夹', icon: '🔖',
+    fields: [
+      { key: 'title', label: '名称', required: true },
+      { key: 'url', label: '链接', required: true, placeholder: '例如：bilibili.com', inputmode: 'url' },
+      { key: 'note', label: '备注', placeholder: '可选' },
+    ],
+    check(d) {
+      const u = normalizeUrl(d.url);
+      if (!u) return '链接格式不对，例如：https://example.com';
+      d.url = u;
+    },
+    badge: list => list.length,
+    prepare: list => list.sort((a, b) => (b.created || 0) - (a.created || 0)),
+    row(it) {
+      const first = [...String(it.title || '?')][0];
+      return `<div class="item" data-id="${esc(it.id)}">
+        <div class="fav">${esc(first)}</div>
+        <div class="item-body">
+          <div class="item-title">${esc(it.title)}</div>
+          <div class="item-sub">${esc(hostOf(it.url))}${it.note ? ' · ' + esc(it.note) : ''}</div>
+        </div>
+        <button class="icon-btn" data-act="edit" aria-label="编辑">✎</button>
+      </div>`;
+    },
+  },
+
+  countdowns: {
+    name: '倒计时', icon: '⏰',
+    fields: [
+      { key: 'name', label: '事件', required: true, placeholder: '例如：期末考试' },
+      { key: 'date', label: '日期', type: 'date', required: true },
+    ],
+    badge: list => list.filter(c => daysFromToday(c.date) >= 0).length,
+    prepare: list => list.sort((a, b) => {            // 未来的按近到远，过去的放后面
+      const da = daysFromToday(a.date), dbb = daysFromToday(b.date);
+      if ((da >= 0) !== (dbb >= 0)) return da >= 0 ? -1 : 1;
+      return da >= 0 ? da - dbb : dbb - da;
+    }),
+    row(it) {
+      const n = daysFromToday(it.date);
+      let cls = '', right;
+      if (n > 0) right = `<span>还有</span><b>${n}</b><span>天</span>`;
+      else if (n === 0) { cls = 'today'; right = '<b>就是今天</b>'; }
+      else { cls = 'past'; right = `<span>已过</span><b>${-n}</b><span>天</span>`; }
+      return `<div class="item ${cls}" data-id="${esc(it.id)}">
+        <div class="item-body"><div class="item-title">${esc(it.name)}</div><div class="item-sub">${esc(fmtDate(it.date))}</div></div>
+        <div class="cd">${right}</div>
+      </div>`;
+    },
+  },
+};
+
+/* ---------- 渲染 ---------- */
+let cur = TABS[localStorage.getItem(KEY + '-tab')] ? localStorage.getItem(KEY + '-tab') : 'progress';
+let editing = null;
+
+function render() {
+  $('nav').innerHTML = Object.entries(TABS).map(([k, t]) => {
+    const n = t.badge(db[k]);
+    return `<button class="nav-btn ${k === cur ? 'active' : ''}" data-tab="${k}">
+      <span class="ico">${t.icon}</span><span class="label">${t.name}</span>${n ? `<span class="badge">${n}</span>` : ''}
+    </button>`;
+  }).join('');
+  $('title').textContent = TABS[cur].name;
+  $('toolbar').hidden = cur !== 'notes';
+  renderList();
+  renderBackupHint();
+}
+function renderList() {
+  const t = TABS[cur], all = db[cur], items = t.prepare(all.slice());
+  listEl.innerHTML = items.length
+    ? items.map(it => t.row(it)).join('')
+    : `<div class="empty">${all.length ? '没有找到匹配的内容' : '这里还是空的<br>点右上角「＋ 新建」添加第一条'}</div>`;
+}
+function renderBackupHint() {
+  const t = +localStorage.getItem(KEY + '-lastExport');
+  const el = $('backupHint');
+  if (!t) { el.textContent = '还没备份过'; el.classList.add('warn'); return; }
+  const n = Math.floor((Date.now() - t) / 86400000);
+  el.textContent = n === 0 ? '今天已备份' : `上次备份：${n} 天前`;
+  el.classList.toggle('warn', n >= 7);
+}
+
+/* ---------- 编辑弹窗 ---------- */
+function fieldHTML(f, value) {
+  const v = esc(value ?? '');
+  const attrs = `id="f-${f.key}" name="${f.key}" placeholder="${esc(f.placeholder || '')}"`;
+  let input;
+  if (f.type === 'textarea') input = `<textarea ${attrs}>${v}</textarea>`;
+  else if (f.type === 'number') input = `<input ${attrs} type="number" inputmode="decimal" step="any" min="0" value="${v}">`;
+  else if (f.type === 'date') input = `<input ${attrs} type="date" value="${v}">`;
+  else input = `<input ${attrs} type="text" value="${v}"${f.inputmode ? ` inputmode="${f.inputmode}" autocapitalize="off" autocorrect="off" spellcheck="false"` : ''}>`;
+  return `<div class="field"><label for="f-${f.key}">${esc(f.label)}${f.required ? ' *' : ''}</label>${input}</div>`;
+}
+function openEditor(item) {
+  editing = item;
+  const t = TABS[cur];
+  $('sheetTitle').textContent = `${item ? '编辑' : '新建'} · ${t.name}`;
+  $('fields').innerHTML = t.fields.map(f => fieldHTML(f, item ? item[f.key] : '')).join('');
+  $('delBtn').hidden = !item;
+  $('mask').classList.add('show');
+  if (!item) $('fields').querySelector('input, textarea').focus();
+}
+function closeEditor() { $('mask').classList.remove('show'); editing = null; }
+
+$('sheet').addEventListener('submit', e => {
+  e.preventDefault();
+  const t = TABS[cur], form = new FormData(e.target), data = {};
+  for (const f of t.fields) {
+    let v = String(form.get(f.key) ?? '');
+    v = f.type === 'textarea' ? v.replace(/\s+$/, '') : v.trim();
+    if (f.required && !v) return alert(`「${f.label}」还没填`);
+    data[f.key] = f.type === 'number' ? (v === '' ? 0 : Number(v)) : v;
+  }
+  const err = t.check && t.check(data);
+  if (err) return alert(err);
+  const now = Date.now();
+  if (editing) Object.assign(editing, data, { updated: now });
+  else db[cur].push({ id: uid(), created: now, updated: now, ...(cur === 'todos' ? { done: false } : {}), ...data });
+  save(); closeEditor(); render();
+});
+$('cancelBtn').onclick = closeEditor;
+$('delBtn').onclick = () => {
+  if (!editing || !confirm('确定删除这一条吗？删除后找不回来。')) return;
+  db[cur] = db[cur].filter(x => x !== editing);
+  save(); closeEditor(); render();
+};
+
+/* ---------- 点击操作 ---------- */
+$('nav').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]');
+  if (!b) return;
+  cur = b.dataset.tab;
+  localStorage.setItem(KEY + '-tab', cur);
+  listEl.scrollTop = 0;
+  render();
+});
+$('addBtn').onclick = () => openEditor(null);
+searchEl.addEventListener('input', renderList);
+
+listEl.addEventListener('click', e => {
+  const el = e.target.closest('.item');
+  if (!el) return;
+  const it = db[cur].find(x => x.id === el.dataset.id);
+  if (!it) return;
+  const actEl = e.target.closest('[data-act]');
+  const act = actEl ? actEl.dataset.act : null;
+
+  if (act === 'inc' || act === 'dec') {
+    const total = +it.total || 0;
+    it.current = Math.max(0, Math.min(total, (+it.current || 0) + (act === 'inc' ? 1 : -1)));
+    it.updated = Date.now();
+    save(); render(); return;
+  }
+  if (act === 'toggle') {
+    it.done = !it.done; it.updated = Date.now();
+    save(); render(); return;
+  }
+  if (cur === 'bookmarks' && act !== 'edit') {
+    if (/^https?:\/\//i.test(it.url)) window.open(it.url, '_blank', 'noopener');
+    return;
+  }
+  openEditor(it);
+});
+
+/* ---------- 导出 / 导入 ---------- */
+$('exportBtn').onclick = async () => {
+  const json = JSON.stringify({ app: 'study-dashboard', version: 1, exportedAt: new Date().toISOString(), data: db }, null, 2);
+  const name = `学习仪表盘备份-${todayStr()}.json`;
+  const file = new File([json], name, { type: 'application/json' });
+  const done = () => { localStorage.setItem(KEY + '-lastExport', Date.now()); renderBackupHint(); };
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file] }); done(); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  done();
+};
+$('importBtn').onclick = () => $('fileInput').click();
+$('fileInput').onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const parsed = JSON.parse(await f.text());
+    const next = normalize(parsed && parsed.data ? parsed.data : parsed);
+    const count = Object.values(next).reduce((s, arr) => s + arr.length, 0);
+    if (!confirm(`备份里共有 ${count} 条记录。\n导入会覆盖当前所有数据，确定吗？`)) return;
+    db = next; save(); render();
+  } catch {
+    alert('这个文件读不了，请确认选的是导出的 .json 备份文件');
+  }
+};
+
+// 从后台切回来时刷新（比如第二天打开，倒计时天数会更新）
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+
+render();
+</script>
+</body>
+</html>
