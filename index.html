@@ -1,195 +1,211 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="学习仪表盘">
+<meta name="apple-mobile-web-app-title" content="clawd">
 <meta name="theme-color" content="#D2E1EC">
-<title>学习仪表盘</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<title>clawd</title>
 <style>
-  :root {
-    --text: #4A4F42;        /* 主文字 */
-    --text-soft: #6A6F62;   /* 次要文字 */
-    --accent: #F9A282;      /* 强调色：按钮、进度条、选中 */
-    --accent-soft: #FCDACC; /* 强调色浅版：标签底色 */
-    --accent-deep: #B5532F; /* 深橙：需要橙色文字时用 */
-    --side: #D2E1EC;        /* 侧边栏 */
-    --bg: #E6EEF4;          /* 主背景 */
-    --card: #F4F8FB;        /* 卡片 */
-    --line: #C5D4DF;        /* 边框 */
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-    color: var(--text); background: var(--bg);
-    -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
-  }
-  button, input, textarea { font: inherit; color: inherit; }
-  button { border: none; background: none; cursor: pointer; touch-action: manipulation; }
-  [hidden] { display: none !important; }
+:root{
+  --text:#4A4F42; --soft:#7A7F72; --accent:#F9A282; --accent-soft:#FCDACC; --accent-deep:#B5532F;
+  --side:#D2E1EC; --bg:#E4EDF4; --field:#EFF4F8; --line:#C2D1DC; --strong:#4A4F42;
+  --mono:"Courier New",Courier,"PingFang SC","Hiragino Sans GB",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--mono);font-size:14px;line-height:1.55;color:var(--text);background:var(--bg);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit;border-radius:0}
+button{border:none;background:none;cursor:pointer;touch-action:manipulation}
+[hidden]{display:none!important}
+.app{display:flex;height:100vh;height:100dvh}
 
-  .app { display: flex; height: 100vh; height: 100dvh; }
+/* sidebar */
+.side{width:200px;flex-shrink:0;display:flex;flex-direction:column;background:var(--side);border-right:1px solid var(--line);padding:calc(22px + env(safe-area-inset-top)) 0 calc(14px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
+.brand{padding:0 20px 24px;font-size:22px;font-weight:700}
+.nav{flex:1;overflow-y:auto}
+.nav-btn{display:flex;align-items:center;width:100%;height:46px;padding:0 20px;font-size:15px;text-align:left;-webkit-user-select:none;user-select:none}
+.nav-btn:active{background:rgba(74,79,66,.07)}
+.nav-btn.active{background:var(--accent)}
+.nav-btn .n{margin-left:auto;font-size:12px;color:var(--soft)}
+.nav-btn.active .n{color:var(--text)}
+.side-foot{border-top:1px solid var(--line);padding-top:8px}
+.foot-btn{display:block;width:100%;height:40px;padding:0 20px;font-size:13px;text-align:left}
+.foot-btn:active{background:rgba(74,79,66,.07)}
+.hint{padding:4px 20px 0;font-size:11px;color:var(--soft)}
+.hint.warn{color:var(--accent-deep)}
 
-  /* ---------- 侧边栏 ---------- */
-  .side {
-    width: 210px; flex-shrink: 0; background: var(--side);
-    display: flex; flex-direction: column;
-    padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
-  }
-  .brand { font-size: 20px; font-weight: 700; padding: 8px 12px 20px; }
-  .nav { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
-  .nav-btn {
-    display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 14px;
-    border-radius: 12px; font-size: 17px; text-align: left; -webkit-user-select: none; user-select: none;
-  }
-  .nav-btn:active { background: rgba(74,79,66,.08); }
-  .nav-btn.active { background: var(--accent); font-weight: 600; }
-  .ico { width: 24px; text-align: center; font-size: 20px; }
-  .label { flex: 1; }
-  .badge { font-size: 13px; min-width: 24px; padding: 2px 7px; border-radius: 10px; background: rgba(74,79,66,.1); text-align: center; }
-  .nav-btn.active .badge { background: rgba(255,255,255,.5); }
-  .side-foot { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
-  .foot-btn { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 10px; font-size: 15px; text-align: left; }
-  .foot-btn:active { background: rgba(74,79,66,.08); }
-  .backup-hint { font-size: 12px; color: var(--text-soft); padding: 2px 14px 0; }
+/* main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.wrap{width:100%;max-width:860px;margin:0 auto;padding-left:28px;padding-right:calc(28px + env(safe-area-inset-right))}
+.top{flex-shrink:0}
+.head{display:flex;align-items:flex-end;gap:12px;padding:calc(24px + env(safe-area-inset-top)) 0 14px;border-bottom:1px solid var(--strong)}
+.head-text{flex:1;min-width:0}
+.head h1{font-size:22px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head .sub{margin-top:4px;font-size:12px;letter-spacing:.08em;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head-actions{display:flex;gap:8px;align-items:center}
+.plus{position:relative;flex-shrink:0;width:40px;height:40px;border:1px solid var(--text)}
+.plus::before,.plus::after{content:"";position:absolute;left:50%;top:50%;background:var(--text);transform:translate(-50%,-50%)}
+.plus::before{width:16px;height:1px}
+.plus::after{width:1px;height:16px}
+.plus:active{background:var(--accent)}
+.tbtn{height:36px;padding:0 12px;border:1px solid var(--text);font-size:13px}
+.tbtn:active{background:var(--accent-soft)}
+.tbtn.main{background:var(--accent)}
+.tbtn.danger{color:var(--accent-deep);border-color:var(--accent-deep)}
+.search-bar{padding-top:12px}
+.search{width:100%;height:38px;padding:0 12px;border:1px solid var(--line);background:var(--field);font-size:14px;outline:none;-webkit-appearance:none;appearance:none}
+.search:focus{border-color:var(--text)}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content{padding-top:4px;padding-bottom:calc(48px + env(safe-area-inset-bottom))}
 
-  /* ---------- 主区域 ---------- */
-  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .head, .toolbar { width: 100%; max-width: 948px; margin: 0 auto; padding-left: 24px; padding-right: calc(24px + env(safe-area-inset-right)); }
-  .head { display: flex; align-items: center; gap: 12px; padding-top: calc(22px + env(safe-area-inset-top)); padding-bottom: 14px; }
-  .head h1 { flex: 1; font-size: 26px; }
-  .add-btn { height: 44px; padding: 0 20px; border-radius: 22px; background: var(--accent); font-size: 16px; font-weight: 600; }
-  .add-btn:active { filter: brightness(.94); }
-  .toolbar { padding-bottom: 12px; }
-  .search {
-    width: 100%; height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--line);
-    background: var(--card); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none;
-  }
-  .search:focus { border-color: var(--accent); }
-  .list {
-    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    padding: 4px calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) 24px;
-  }
-  .list > * { max-width: 900px; margin-left: auto; margin-right: auto; }
+/* rows */
+.sec{display:flex;align-items:baseline;gap:10px;margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--strong);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)}
+.sec b{color:var(--text)}
+.sec .act{margin-left:auto;padding:4px 0;font-size:12px;letter-spacing:0;text-transform:none;color:var(--accent-deep)}
+.sub-sec{padding:12px 0 2px;font-size:11px;letter-spacing:.12em;color:var(--soft)}
+.row{display:flex;align-items:center;gap:14px;min-height:54px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.row:active{background:rgba(74,79,66,.04)}
+.row-body{flex:1;min-width:0}
+.t{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t.wrap-t{white-space:normal;word-break:break-word}
+.s{margin-top:2px;font-size:12px;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p{margin-top:3px;font-size:13px;color:var(--soft);word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.warn{color:var(--accent-deep)}
+.empty{padding:60px 0;text-align:center;font-size:13px;color:var(--soft)}
+.hint-row{padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;color:var(--soft)}
+.tag{display:inline-block;margin-right:8px;padding:0 6px;border:1px solid var(--accent);font-size:11px;color:var(--accent-deep)}
+.row.cta{margin-top:16px;padding:12px 14px;border:1px solid var(--accent);background:var(--accent-soft)}
+.row.hl{background:var(--accent-soft)}
+.row.past{opacity:.6}
 
-  /* ---------- 列表条目 ---------- */
-  .item {
-    display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 14px 16px; margin-bottom: 10px;
-    background: var(--card); border-radius: 14px; box-shadow: 0 1px 3px rgba(74,79,66,.08); cursor: pointer;
-  }
-  .item:active { background: #EDF3F8; }
-  .item-body { flex: 1; min-width: 0; }
-  .item-line { display: flex; align-items: baseline; gap: 10px; }
-  .item-line .item-title { flex: 1; }
-  .item-title { font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .item-title.wrap { white-space: normal; word-break: break-word; }
-  .item-sub { margin-top: 4px; font-size: 14px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .warn { color: var(--accent-deep); font-weight: 600; }
-  .item.urgent { box-shadow: inset 4px 0 0 var(--accent), 0 1px 3px rgba(74,79,66,.08); }
-  .empty { padding: 70px 0; text-align: center; color: var(--text-soft); font-size: 16px; line-height: 1.8; }
+/* to-do */
+.chk{flex-shrink:0;display:grid;place-items:center;width:44px;height:44px;margin:-10px -10px -10px -12px}
+.chk i{position:relative;display:block;width:18px;height:18px;border:1px solid var(--text)}
+.chk.on i{background:var(--accent);border-color:var(--accent)}
+.chk.on i::after,.task.on .tbox::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid var(--text);border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.row.done .t{text-decoration:line-through;color:var(--soft)}
+.mini{flex-shrink:0;height:30px;padding:0 10px;border:1px solid var(--line);font-size:12px}
+.mini:active{background:var(--accent-soft)}
 
-  /* 进度 */
-  .pct { font-size: 15px; font-weight: 700; }
-  .bar { height: 8px; margin-top: 10px; border-radius: 4px; background: var(--side); overflow: hidden; }
-  .bar i { display: block; height: 100%; border-radius: 4px; background: var(--accent); transition: width .25s; }
-  .stepper { display: flex; gap: 8px; }
-  .round-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); font-size: 22px; line-height: 44px; text-align: center; }
-  .round-btn:active { background: var(--accent-soft); }
+/* progress */
+.folder{border-bottom:1px solid var(--strong)}
+.frow{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 0;cursor:pointer}
+.chev{flex-shrink:0;width:9px;height:9px;margin:0 4px;border:solid var(--text);border-width:0 1px 1px 0;transform:rotate(-45deg);transition:transform .15s}
+.folder.open .chev{transform:rotate(45deg)}
+.fname{flex:1;min-width:0;font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pct{font-size:15px}
+.bar{height:3px;background:var(--side)}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.fitems{padding:0 0 10px 26px}
+.line{display:flex;align-items:baseline;gap:10px}
+.line .t{flex:1}
+.prow .bar{margin:6px 0 4px}
+.step{display:flex}
+.sq{flex-shrink:0;display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--line);font-size:17px;line-height:1}
+.sq+.sq{margin-left:-1px}
+.sq:active{background:var(--accent-soft)}
+.sq.dots{border-color:transparent;color:var(--soft);font-size:14px}
 
-  /* 待办 */
-  .check { flex-shrink: 0; width: 44px; height: 44px; margin: -8px -4px -8px -8px; display: grid; place-items: center; }
-  .check::before {
-    content: ""; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--accent);
-    box-sizing: border-box; display: grid; place-items: center; font-size: 15px; font-weight: 700;
-  }
-  .check.on::before { content: "✓"; background: var(--accent); }
-  .item.done { opacity: .55; }
-  .item.done .item-title { text-decoration: line-through; }
+/* journal / bookmarks / countdown */
+.jday{flex-shrink:0;width:48px}
+.jday b{display:block;font-size:24px;font-weight:400;line-height:1}
+.jday span{font-size:11px;letter-spacing:.1em;color:var(--soft)}
+.fav{flex-shrink:0;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--text);font-size:15px;font-weight:700}
+.cd{flex-shrink:0;text-align:right}
+.cd b{display:block;font-size:28px;font-weight:400;line-height:1;color:var(--accent-deep)}
+.cd span{font-size:11px;letter-spacing:.1em;color:var(--soft)}
+.row.past .cd b{color:var(--soft)}
 
-  /* 笔记 */
-  .preview {
-    margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--text-soft); word-break: break-word;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .tag { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--text); font-size: 13px; }
+/* document view */
+.doc-title{margin-top:20px;font-size:22px;font-weight:700;line-height:1.3;word-break:break-word}
+.md{margin-top:16px;font-size:15px;line-height:1.75;word-break:break-word}
+.md>*+*{margin-top:.8em}
+.md h1,.md h2,.md h3,.md h4,.md h5,.md h6{margin-top:1.4em;font-weight:700;line-height:1.35}
+.md>:first-child{margin-top:0}
+.md h1{font-size:20px}.md h2{font-size:17px}.md h3,.md h4,.md h5,.md h6{font-size:15px}
+.md ul,.md ol{padding-left:1.6em}
+.md li+li{margin-top:.25em}
+.md li.task{display:flex;gap:10px;align-items:flex-start;margin-left:-1.6em;list-style:none}
+.tbox{position:relative;flex-shrink:0;width:16px;height:16px;margin-top:.4em;border:1px solid var(--text);cursor:pointer}
+.tbox::before{content:"";position:absolute;inset:-12px}
+.task.on .tbox{background:var(--accent);border-color:var(--accent)}
+.task.on .tbox::after{left:4px;top:0}
+.task.on>span:last-child{text-decoration:line-through;color:var(--soft)}
+.md blockquote{padding-left:14px;border-left:2px solid var(--accent);color:var(--soft)}
+.md code{padding:1px 4px;background:var(--side);font-size:.93em}
+.md pre{padding:12px 14px;background:var(--side);overflow-x:auto;font-size:13px;line-height:1.5}
+.md pre code{padding:0;background:none}
+.md img{display:block;max-width:100%;height:auto;border:1px solid var(--line)}
+.md hr{border:none;border-top:1px solid var(--strong)}
+.md a{color:var(--accent-deep);text-decoration:underline;text-underline-offset:2px}
+.md del{color:var(--soft)}
+.done-list{margin-top:8px;padding-left:1.4em;font-size:14px;line-height:1.8;color:var(--soft);text-decoration:line-through}
 
-  /* 收藏 */
-  .fav { flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); display: grid; place-items: center; font-weight: 700; font-size: 17px; }
-  .icon-btn { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; color: var(--text-soft); }
-  .icon-btn:active { background: var(--bg); }
+/* editor */
+.ed-title,.ed-tag{display:block;width:100%;padding:6px 0;border:none;border-bottom:1px solid var(--line);background:transparent;outline:none}
+.ed-title{margin-top:18px;font-size:22px;font-weight:700}
+.ed-tag{font-size:13px}
+.mdbar{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;margin-top:14px;background:var(--bg);border:1px solid var(--line)}
+.mdbar button{height:38px;padding:0 12px;border-right:1px solid var(--line);font-size:13px}
+.mdbar button:active{background:var(--accent-soft)}
+.ed-body{display:block;width:100%;min-height:55vh;margin-top:-1px;padding:14px;border:1px solid var(--line);background:var(--field);font-size:15px;line-height:1.7;outline:none;resize:none;overflow:hidden;-webkit-appearance:none;appearance:none}
 
-  /* 倒计时 */
-  .cd { flex-shrink: 0; display: flex; align-items: baseline; gap: 4px; font-size: 14px; color: var(--text-soft); }
-  .cd b { font-size: 28px; color: var(--accent-deep); }
-  .item.today { background: var(--accent-soft); }
-  .item.today .cd b { font-size: 20px; }
-  .item.past { opacity: .7; }
-  .item.past .cd b { color: var(--text-soft); }
+/* modal */
+.mask{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(74,79,66,.3)}
+.mask.show{display:flex}
+.sheet{width:100%;max-width:480px;max-height:100%;overflow-y:auto;padding:22px 24px;background:var(--bg);border:1px solid var(--text)}
+.sheet h2{margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--text);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+.msg{font-size:13px;line-height:1.7}
+.field{margin-bottom:14px}
+.field label{display:block;margin-bottom:5px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+.field input{width:100%;height:42px;padding:0 10px;border:1px solid var(--line);background:var(--field);font-size:15px;outline:none;-webkit-appearance:none;appearance:none}
+.field input:focus{border-color:var(--text)}
+.field input[type=date]{display:block;line-height:42px;text-align:left}
+.seg{display:flex;border:1px solid var(--text)}
+.seg button{flex:1;height:38px;font-size:13px}
+.seg button+button{border-left:1px solid var(--text)}
+.seg button.on{background:var(--accent)}
+.actions{display:flex;gap:8px;margin-top:20px}
+.actions .sp{flex:1}
 
-  /* ---------- 弹窗 ---------- */
-  .mask {
-    position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 10;
-    display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(74,79,66,.35);
-  }
-  .mask.show { display: flex; }
-  .sheet {
-    width: 100%; max-width: 540px; max-height: 100%; overflow-y: auto; padding: 22px;
-    border-radius: 18px; background: var(--card); box-shadow: 0 10px 40px rgba(74,79,66,.25);
-  }
-  .sheet h2 { font-size: 20px; margin-bottom: 16px; }
-  .field { margin-bottom: 14px; }
-  .field label { display: block; margin-bottom: 6px; font-size: 14px; color: var(--text-soft); }
-  .field input, .field textarea {
-    width: 100%; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 10px;
-    background: var(--bg); font-size: 17px; outline: none; -webkit-appearance: none; appearance: none;
-  }
-  .field input { height: 46px; }
-  .field input[type="date"] { display: block; line-height: 46px; text-align: left; }
-  .field input::-webkit-date-and-time-value { text-align: left; }
-  .field textarea { min-height: 220px; padding: 12px; line-height: 1.6; resize: vertical; }
-  .field input:focus, .field textarea:focus { border-color: var(--accent); }
-  .actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-  .spacer { flex: 1; }
-  .btn { height: 44px; padding: 0 20px; border-radius: 22px; font-size: 16px; font-weight: 600; }
-  .btn-main { background: var(--accent); }
-  .btn-ghost { background: var(--bg); }
-  .btn-del { color: var(--accent-deep); padding: 0 8px; }
-
-  /* 分屏变窄时：侧边栏只显示图标 */
-  @media (max-width: 640px) {
-    .side { width: 72px; padding-left: calc(8px + env(safe-area-inset-left)); padding-right: 8px; }
-    .brand, .label, .badge, .backup-hint { display: none; }
-    .nav-btn, .foot-btn { justify-content: center; padding: 0; }
-    .head, .toolbar { padding-left: 16px; padding-right: 16px; }
-    .list { padding-left: 16px; padding-right: 16px; }
-  }
+@media (max-width:640px){
+  .side{width:124px}
+  .brand{padding:0 14px 18px;font-size:18px}
+  .nav-btn,.foot-btn{padding:0 14px;font-size:13px}
+  .nav-btn .n{display:none}
+  .hint{padding:4px 14px 0}
+  .wrap{padding-left:16px;padding-right:16px}
+}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side">
-    <div class="brand">📚 学习仪表盘</div>
+    <div class="brand">clawd</div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <button class="foot-btn" id="exportBtn"><span class="ico">📤</span><span class="label">导出备份</span></button>
-      <button class="foot-btn" id="importBtn"><span class="ico">📥</span><span class="label">导入备份</span></button>
-      <div class="backup-hint" id="backupHint"></div>
+      <button class="foot-btn" id="exportBtn">Export</button>
+      <button class="foot-btn" id="importBtn">Import</button>
+      <div class="hint" id="backupHint"></div>
       <input type="file" id="fileInput" accept=".json,application/json" hidden>
+      <input type="file" id="imgInput" accept="image/*" multiple hidden>
     </div>
   </aside>
   <main class="main">
-    <header class="head">
-      <h1 id="title"></h1>
-      <button class="add-btn" id="addBtn">＋ 新建</button>
-    </header>
-    <div class="toolbar" id="toolbar" hidden>
-      <input class="search" id="search" type="search" placeholder="搜索标题、内容或分类">
+    <div class="wrap top">
+      <header class="head">
+        <div class="head-text"><h1 id="title"></h1><div class="sub" id="sub"></div></div>
+        <div class="head-actions" id="headActions"></div>
+      </header>
+      <div class="search-bar" id="searchBar" hidden><input class="search" id="search" type="search" placeholder="Search"></div>
     </div>
-    <div class="list" id="list"></div>
+    <div class="scroll" id="scroll"><div class="wrap content" id="list"></div></div>
   </main>
 </div>
 
@@ -198,363 +214,1015 @@
     <h2 id="sheetTitle"></h2>
     <div id="fields"></div>
     <div class="actions">
-      <button type="button" class="btn btn-del" id="delBtn">删除</button>
-      <span class="spacer"></span>
-      <button type="button" class="btn btn-ghost" id="cancelBtn">取消</button>
-      <button type="submit" class="btn btn-main">保存</button>
+      <button type="button" class="tbtn danger" id="delBtn">Delete</button>
+      <span class="sp"></span>
+      <button type="button" class="tbtn" id="cancelBtn">Cancel</button>
+      <button type="submit" class="tbtn main">Save</button>
     </div>
   </form>
 </div>
 
-<script>
-const KEY = 'study-dashboard-v1';
-const $ = id => document.getElementById(id);
-const listEl = $('list'), searchEl = $('search');
+<div class="mask" id="exportMask">
+  <div class="sheet">
+    <h2>Export backup</h2>
+    <p class="msg" id="exportMsg"></p>
+    <div class="actions">
+      <span class="sp"></span>
+      <button type="button" class="tbtn" id="exportCancel">Cancel</button>
+      <button type="button" class="tbtn main" id="exportSave">Save file</button>
+    </div>
+  </div>
+</div>
 
-/* ---------- 小工具 ---------- */
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const fmtNum = n => Number.isInteger(n) ? n : +n.toFixed(2);
+const fmtNum = n => Number.isInteger(n) ? n : +(+n).toFixed(2);
 
-function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+/* ---------- dates ---------- */
+const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const MONTH = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => ymd(new Date());
+const validDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ''));
+const toDate = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = toDate(s); d.setDate(d.getDate() + n); return ymd(d); };
+const mondayOf = s => addDays(s, -((toDate(s).getDay() + 6) % 7));
+function diffDays(a, b) { // b - a, in days
+  const x = toDate(a), y = toDate(b);
+  return Math.round((Date.UTC(y.getFullYear(), y.getMonth(), y.getDate()) - Date.UTC(x.getFullYear(), x.getMonth(), x.getDate())) / 86400000);
 }
-function daysFromToday(s) {           // 正数=未来，0=今天，负数=已过去
-  const [y, m, d] = String(s).split('-').map(Number);
-  const t = new Date();
-  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000);
+function isoWeek(s) {
+  const d = toDate(s), t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+  return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7);
 }
-function fmtDate(s) {
-  const [y, m, d] = String(s).split('-').map(Number);
-  return `${y}年${m}月${d}日 周${'日一二三四五六'[new Date(y, m - 1, d).getDay()]}`;
+const fmtLong = s => { const d = toDate(s); return `${DOW[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; };
+const fmtShort = s => { const d = toDate(s); return `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`; };
+const fmtMD = s => { const d = toDate(s); return `${MON[d.getMonth()]} ${d.getDate()}`; };
+function fmtStamp(ts) {
+  const d = new Date(ts || Date.now()), now = new Date();
+  const day = `${MON[d.getMonth()]} ${d.getDate()}` + (d.getFullYear() === now.getFullYear() ? '' : `, ${d.getFullYear()}`);
+  return `${day} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-function fmtTime(ts) {
-  const d = new Date(ts), now = new Date();
-  const md = `${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  return d.getFullYear() === now.getFullYear() ? md : `${d.getFullYear()}年${md}`;
-}
-function normalizeUrl(s) {            // 只允许 http/https 链接
-  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = 'https://' + s;
+
+/* ---------- urls ---------- */
+function safeHref(s) {
   try { const u = new URL(s); return /^https?:$/.test(u.protocol) ? u.href : null; } catch { return null; }
 }
-function hostOf(u) { try { return new URL(u).host; } catch { return u; } }
+const normalizeUrl = s => safeHref(/^[a-z][a-z0-9+.-]*:/i.test(s) ? s : 'https://' + s);
+const hostOf = u => { try { return new URL(u).host; } catch { return u; } };
 
-/* ---------- 数据存取 ---------- */
-const emptyDB = () => ({ progress: [], notes: [], todos: [], bookmarks: [], countdowns: [] });
+/* ---------- IndexedDB ---------- */
+const store = (() => {
+  let p = null;
+  const open = () => p || (p = new Promise((res, rej) => {
+    const r = indexedDB.open('clawd', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('images'); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+  const run = async (name, mode, fn) => {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const tx = d.transaction(name, mode), req = fn(tx.objectStore(name));
+      tx.oncomplete = () => res(req ? req.result : undefined);
+      tx.onerror = tx.onabort = () => rej(tx.error);
+    });
+  };
+  return {
+    get: (n, k) => run(n, 'readonly', s => s.get(k)),
+    put: (n, k, v) => run(n, 'readwrite', s => s.put(v, k)),
+  };
+})();
+
+/* ---------- data ---------- */
+const OLD_KEY = 'study-dashboard-v1', UI_KEY = 'clawd-ui', EXPORT_KEY = 'clawd-lastExport';
+const emptyDB = () => ({ version: 2, todos: [], notes: [], folders: [], journal: [], bookmarks: [], countdowns: [] });
+let db = emptyDB();
+const safeJSON = s => { try { return JSON.parse(s) || {}; } catch { return {}; } };
+const ui = Object.assign({ tab: 'todos', doneOpen: false }, safeJSON(localStorage.getItem(UI_KEY)));
+const saveUI = () => localStorage.setItem(UI_KEY, JSON.stringify(ui));
+
+const objs = x => Array.isArray(x) ? x.filter(o => o && typeof o === 'object').map(o => ({ ...o, id: String(o.id || uid()) })) : [];
 function normalize(d) {
   const out = emptyDB();
-  if (d && typeof d === 'object') {
-    for (const k in out) {
-      if (Array.isArray(d[k])) out[k] = d[k].filter(x => x && typeof x === 'object').map(x => ({ ...x, id: String(x.id || uid()) }));
-    }
-  }
+  if (!d || typeof d !== 'object') return out;
+  for (const k of ['notes', 'journal', 'bookmarks', 'countdowns']) out[k] = objs(d[k]);
+  out.folders = objs(d.folders).map(f => ({ ...f, name: String(f.name || 'Untitled'), items: objs(f.items) }));
+  out.todos = objs(d.todos).map(t => {
+    const scope = t.scope === 'week' ? 'week' : 'day';
+    const date = validDate(t.date) ? t.date : today();
+    return { ...t, text: String(t.text || ''), scope, date: scope === 'week' ? mondayOf(date) : date, done: !!t.done, rolled: +t.rolled || 0 };
+  });
+  out.journal = out.journal.filter(j => validDate(j.date));
   return out;
 }
-let db;
-try { db = normalize(JSON.parse(localStorage.getItem(KEY))); } catch { db = emptyDB(); }
+function migrateV1(d) { // data from the first version (study dashboard)
+  d = d && d.data ? d.data : d;
+  const n = emptyDB();
+  if (!d || typeof d !== 'object') return n;
+  n.todos = objs(d.todos).map(t => ({
+    id: t.id, text: String(t.text || ''), scope: 'day', date: validDate(t.due) ? t.due : today(),
+    done: !!t.done, doneDate: t.done ? ymd(new Date(t.updated || Date.now())) : null, doneAt: t.done ? (t.updated || Date.now()) : 0,
+    rolled: 0, created: t.created || Date.now(),
+  }));
+  n.notes = objs(d.notes).map(x => ({ id: x.id, title: String(x.title || ''), tag: String(x.tag || ''), content: String(x.content || ''), created: x.created || Date.now(), updated: x.updated || x.created || Date.now() }));
+  const items = objs(d.progress).map(p => ({ id: p.id, name: String(p.name || ''), current: +p.current || 0, total: +p.total || 1, unit: String(p.unit || '') }));
+  if (items.length) n.folders.push({ id: uid(), name: 'General', open: true, items });
+  n.bookmarks = objs(d.bookmarks);
+  n.countdowns = objs(d.countdowns);
+  return n;
+}
+
+let saveErrShown = false, saveTimer = null;
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(db)); }
-  catch (e) { alert('保存失败，建议马上导出备份。\n' + e.message); }
+  return store.put('kv', 'db', db).catch(e => {
+    if (!saveErrShown) { saveErrShown = true; alert('Save failed. Export a backup now.\n' + (e && e.message || e)); }
+  });
 }
-if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => { saveTimer = null; save(); }, 500); }
+function flushSave() { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; save(); } }
 
-/* ---------- 各模块定义 ---------- */
-function sortTodos(a, b) {
-  if (!!a.done !== !!b.done) return a.done ? 1 : -1;                  // 未完成在前
-  if (a.done) return (b.updated || 0) - (a.updated || 0);              // 已完成：最近完成的在前
-  if (!!a.due !== !!b.due) return a.due ? -1 : 1;                      // 有截止日期的在前
-  return String(a.due || '').localeCompare(String(b.due || '')) || (a.created || 0) - (b.created || 0);
+/* ---------- images ---------- */
+const imgCache = new Map();
+async function getImage(id) {
+  if (imgCache.has(id)) return imgCache.get(id);
+  const v = await store.get('images', id).catch(() => null);
+  if (v) imgCache.set(id, v);
+  return v;
+}
+async function putImage(dataUrl) {
+  const id = uid();
+  await store.put('images', id, dataUrl);
+  imgCache.set(id, dataUrl);
+  return id;
+}
+async function compressImage(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('unsupported image')); i.src = url; });
+    const s = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.round(img.naturalWidth * s), h = Math.round(img.naturalHeight * s);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    return c.toDataURL('image/jpeg', 0.82);
+  } finally { URL.revokeObjectURL(url); }
+}
+async function fillImages(root) {
+  for (const el of root.querySelectorAll('img[data-img]')) {
+    const v = await getImage(el.dataset.img);
+    if (!el.isConnected) return;
+    if (v) el.src = v; else el.alt = '[image missing]';
+  }
 }
 
-const TABS = {
-  progress: {
-    name: '学习进度', icon: '📊',
-    fields: [
-      { key: 'name', label: '科目', required: true, placeholder: '例如：运动控制系统' },
-      { key: 'current', label: '已完成', type: 'number', placeholder: '0' },
-      { key: 'total', label: '总量', type: 'number', required: true, placeholder: '例如：12' },
-      { key: 'unit', label: '单位', placeholder: '章 / 节 / 页 / 课时' },
-    ],
-    check(d) {
-      if (!(d.total > 0)) return '总量要大于 0';
-      if (!(d.current >= 0)) return '已完成不能是负数';
-      d.current = Math.min(d.current, d.total);
-    },
-    badge: list => list.length,
-    prepare: list => list,
-    row(it) {
-      const total = +it.total || 0, c = +it.current || 0;
-      const p = total ? Math.min(100, Math.round(c / total * 100)) : 0;
-      return `<div class="item" data-id="${esc(it.id)}">
-        <div class="item-body">
-          <div class="item-line"><span class="item-title">${esc(it.name)}</span><span class="pct">${p}%</span></div>
-          <div class="bar"><i style="width:${p}%"></i></div>
-          <div class="item-sub">${fmtNum(c)} / ${fmtNum(total)} ${esc(it.unit || '')}${p >= 100 ? ' · 已完成 🎉' : ''}</div>
-        </div>
-        <div class="stepper">
-          <button class="round-btn" data-act="dec" aria-label="减一">−</button>
-          <button class="round-btn" data-act="inc" aria-label="加一">＋</button>
-        </div>
-      </div>`;
-    },
-  },
-
-  notes: {
-    name: '笔记', icon: '📝',
-    fields: [
-      { key: 'title', label: '标题', required: true },
-      { key: 'tag', label: '分类', placeholder: '可选，例如：电力电子' },
-      { key: 'content', label: '内容', type: 'textarea', placeholder: '写点什么…' },
-    ],
-    badge: list => list.length,
-    prepare(list) {
-      const q = searchEl.value.trim().toLowerCase();
-      return list
-        .filter(n => !q || [n.title, n.content, n.tag].some(s => String(s || '').toLowerCase().includes(q)))
-        .sort((a, b) => (b.updated || 0) - (a.updated || 0));
-    },
-    row(it) {
-      return `<div class="item" data-id="${esc(it.id)}"><div class="item-body">
-        <div class="item-title">${esc(it.title)}</div>
-        ${it.content ? `<div class="preview">${esc(String(it.content).slice(0, 200))}</div>` : ''}
-        <div class="item-sub">${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ''}${fmtTime(it.updated || it.created || Date.now())}</div>
-      </div></div>`;
-    },
-  },
-
-  todos: {
-    name: '待办', icon: '✅',
-    fields: [
-      { key: 'text', label: '要做的事', required: true },
-      { key: 'due', label: '截止日期（可选）', type: 'date' },
-    ],
-    badge: list => list.filter(t => !t.done).length,
-    prepare: list => list.sort(sortTodos),
-    row(it) {
-      let sub = '', urgent = false;
-      if (it.due) {
-        const n = daysFromToday(it.due);
-        let txt;
-        if (it.done) txt = `截止 ${esc(it.due)}`;
-        else if (n < 0) { txt = `已逾期 ${-n} 天`; urgent = true; }
-        else if (n === 0) { txt = '今天截止'; urgent = true; }
-        else if (n <= 2) { txt = `${n} 天后截止`; urgent = true; }
-        else txt = `截止 ${esc(it.due)} · 还有 ${n} 天`;
-        sub = `<div class="item-sub ${urgent ? 'warn' : ''}">${txt}</div>`;
+/* ---------- markdown ---------- */
+const HR = /^\s*([-*_])(\s*\1){2,}\s*$/;
+const LIST = /^\s*([-*+]|\d+[.)])\s+(.*)$/;
+const BLOCK_START = /^(```|#{1,6}\s|\s*>|\s*([-*+]|\d+[.)])\s+)/;
+function imgTag(src, alt) {
+  const m = src.match(/^img:([\w-]+)$/);
+  if (m) return `<img data-img="${m[1]}" alt="${esc(alt)}">`;
+  const u = safeHref(src);
+  return u ? `<img src="${esc(u)}" alt="${esc(alt)}" loading="lazy">` : '';
+}
+function inline(s) {
+  const slots = [];
+  const keep = h => `\u0000${slots.push(h) - 1}\u0000`;
+  s = s.replace(/`([^`]+)`/g, (_, c) => keep(`<code>${esc(c)}</code>`));
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_, alt, src) => keep(imgTag(src, alt)));
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (all, t, href) => {
+    const u = safeHref(href);
+    return u ? keep(`<a href="${esc(u)}" target="_blank" rel="noopener">${inline(t)}</a>`) : all;
+  });
+  s = esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    .replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g, '$1<em>$2</em>');
+  return s.replace(/\u0000(\d+)\u0000/g, (_, n) => slots[n]);
+}
+function md(src, base = 0) {
+  const lines = String(src || '').replace(/\r\n?/g, '\n').split('\n');
+  let h = '', i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (/^```/.test(line)) {
+      const buf = []; i++;
+      while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      h += `<pre><code>${esc(buf.join('\n'))}</code></pre>`;
+      continue;
+    }
+    let m = line.match(/^(#{1,6})\s+(.*)$/);
+    if (m) { h += `<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`; i++; continue; }
+    if (HR.test(line)) { h += '<hr>'; i++; continue; }
+    if (/^\s*>/.test(line)) {
+      const start = i, buf = [];
+      while (i < lines.length && /^\s*>/.test(lines[i])) buf.push(lines[i++].replace(/^\s*>\s?/, ''));
+      h += `<blockquote>${md(buf.join('\n'), base + start)}</blockquote>`;
+      continue;
+    }
+    m = line.match(LIST);
+    if (m) {
+      const ordered = /\d/.test(m[1]);
+      let items = '';
+      while (i < lines.length) {
+        const mm = lines[i].match(LIST);
+        if (!mm || /\d/.test(mm[1]) !== ordered || HR.test(lines[i])) break;
+        const task = mm[2].match(/^\[([ xX])\]\s?(.*)$/);
+        items += task
+          ? `<li class="task${task[1] !== ' ' ? ' on' : ''}"><span class="tbox" data-line="${base + i}"></span><span>${inline(task[2])}</span></li>`
+          : `<li>${inline(mm[2])}</li>`;
+        i++;
       }
-      return `<div class="item ${it.done ? 'done' : ''} ${urgent ? 'urgent' : ''}" data-id="${esc(it.id)}">
-        <button class="check ${it.done ? 'on' : ''}" data-act="toggle" aria-label="标记完成"></button>
-        <div class="item-body"><div class="item-title wrap">${esc(it.text)}</div>${sub}</div>
-      </div>`;
-    },
-  },
+      const tag = ordered ? 'ol' : 'ul';
+      h += `<${tag}>${items}</${tag}>`;
+      continue;
+    }
+    const buf = [lines[i++]];
+    while (i < lines.length && lines[i].trim() && !BLOCK_START.test(lines[i]) && !HR.test(lines[i])) buf.push(lines[i++]);
+    h += `<p>${buf.map(l => inline(l)).join('<br>')}</p>`;
+  }
+  return h;
+}
+const stripMd = s => String(s || '')
+  .replace(/```[\s\S]*?(```|$)/g, ' ')
+  .replace(/!\[[^\]]*\]\([^)]*\)/g, '[image] ')
+  .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+  .replace(/^\s*(#{1,6}\s+|>\s?|[-*+]\s+(\[[ xX]\]\s*)?|\d+[.)]\s+)/gm, '')
+  .replace(/[*~`]/g, '')
+  .replace(/\s+/g, ' ').trim();
 
-  bookmarks: {
-    name: '收藏夹', icon: '🔖',
+/* ---------- shared bits ---------- */
+const TABS = [['todos', 'To-do'], ['notes', 'Notes'], ['progress', 'Progress'], ['journal', 'Journal'], ['bookmarks', 'Bookmarks'], ['countdowns', 'Countdown']];
+const TAB_NAME = Object.fromEntries(TABS);
+const empty = m => `<div class="empty">${esc(m)}</div>`;
+const hintRow = m => `<div class="hint-row">${esc(m)}</div>`;
+const sec = (label, count, extra = '') => `<div class="sec"><span>${esc(label)}</span>${count === undefined ? '' : `<b>${count}</b>`}${extra}</div>`;
+let doc = null;   // open note / journal entry: { kind, id, edit, fresh }
+let form = null;  // open modal form
+
+/* ---------- to-do ---------- */
+function bucket(t, td, wk) {
+  if (t.done) return 'done';
+  if (t.scope === 'week') return t.date < wk ? 'overdue' : t.date === wk ? 'week' : 'later';
+  return t.date < td ? 'overdue' : t.date === td ? 'today' : 'later';
+}
+function todoRow(t, kind) {
+  const td = today();
+  const when = t.scope === 'week' ? `Week of ${fmtMD(t.date)}` : fmtShort(t.date);
+  const moved = t.rolled >= 3 ? `moved ${t.rolled}× · split it or drop it?` : '';
+  let sub = '', acts = '';
+  if (kind === 'overdue') {
+    const ago = t.scope === 'week' ? '' : ` · ${diffDays(t.date, td)}d ago`;
+    sub = `<div class="s warn">${esc(when + ago)}${moved ? ' · ' + esc(moved) : ''}</div>`;
+    acts = '<button class="mini" data-act="toToday">Today</button><button class="mini" data-act="drop">Drop</button>';
+  } else if (kind === 'later') sub = `<div class="s">${esc(when)}</div>`;
+  else if (!t.done && moved) sub = `<div class="s warn">${esc(moved)}</div>`;
+  return `<div class="row ${t.done ? 'done' : ''}" data-id="${esc(t.id)}">
+    <button class="chk ${t.done ? 'on' : ''}" data-act="check" aria-label="Done"><i></i></button>
+    <div class="row-body"><div class="t wrap-t">${esc(t.text)}</div>${sub}</div>${acts}</div>`;
+}
+function viewTodos() {
+  if (!db.todos.length) return empty('Nothing here yet. Tap + to add a to-do.');
+  const td = today(), wk = mondayOf(td);
+  const b = { overdue: [], today: [], week: [], later: [], done: [] };
+  for (const t of db.todos) b[bucket(t, td, wk)].push(t);
+  const byDate = (x, y) => x.date.localeCompare(y.date) || (x.created || 0) - (y.created || 0);
+  for (const k of ['overdue', 'today', 'week', 'later']) b[k].sort(byDate);
+  b.done.sort((x, y) => (y.doneAt || 0) - (x.doneAt || 0));
+  let h = '';
+  if (b.overdue.length) {
+    h += sec('Overdue', b.overdue.length, '<button class="act" data-act="allToday">Move all to today</button>');
+    h += b.overdue.map(t => todoRow(t, 'overdue')).join('');
+  }
+  h += sec('Today', b.today.length) + (b.today.length ? b.today.map(t => todoRow(t)).join('') : hintRow('Nothing for today.'));
+  h += sec(`This week · ${fmtMD(wk)} – ${fmtMD(addDays(wk, 6))}`, b.week.length);
+  h += b.week.length ? b.week.map(t => todoRow(t)).join('') : hintRow('Nothing for this week.');
+  if (b.later.length) h += sec('Later', b.later.length) + b.later.map(t => todoRow(t, 'later')).join('');
+  if (b.done.length) {
+    h += sec('Done', b.done.length, `<button class="act" data-act="toggleDone">${ui.doneOpen ? 'Hide' : 'Show'}</button>`);
+    if (ui.doneOpen) {
+      let last = '';
+      for (const t of b.done) {
+        const d = t.doneDate || '';
+        if (d !== last) { h += `<div class="sub-sec">${validDate(d) ? esc(fmtShort(d)) : 'EARLIER'}</div>`; last = d; }
+        h += todoRow(t);
+      }
+    }
+  }
+  return h;
+}
+function todoForm(t) {
+  const td = today(), wk = mondayOf(td);
+  let when = 'today', date = td;
+  if (t) {
+    if (t.scope === 'week') when = 'week';
+    else if (t.date !== td) { when = 'date'; date = t.date; }
+  }
+  openForm({
+    title: t ? 'Edit to-do' : 'New to-do',
     fields: [
-      { key: 'title', label: '名称', required: true },
-      { key: 'url', label: '链接', required: true, placeholder: '例如：bilibili.com', inputmode: 'url' },
-      { key: 'note', label: '备注', placeholder: '可选' },
+      { key: 'text', label: 'Task', required: true },
+      { key: 'when', label: 'When', type: 'seg', options: [['today', 'Today'], ['week', 'This week'], ['date', 'Pick a day']] },
+      { key: 'date', label: 'Day', type: 'date', showIf: v => v.when === 'date' },
     ],
-    check(d) {
-      const u = normalizeUrl(d.url);
-      if (!u) return '链接格式不对，例如：https://example.com';
-      d.url = u;
+    values: { text: t ? t.text : '', when, date },
+    onSave(v) {
+      let scope = 'day', d = td;
+      if (v.when === 'week') { scope = 'week'; d = wk; }
+      else if (v.when === 'date') { if (!validDate(v.date)) return 'Pick a day'; d = v.date; }
+      if (t) {
+        const wasOverdue = bucket(t, td, wk) === 'overdue';
+        Object.assign(t, { text: v.text, scope, date: d });
+        if (wasOverdue && bucket(t, td, wk) !== 'overdue') t.rolled = (t.rolled || 0) + 1;
+      } else {
+        db.todos.push({ id: uid(), text: v.text, scope, date: d, done: false, doneDate: null, doneAt: 0, rolled: 0, created: Date.now() });
+      }
     },
-    badge: list => list.length,
-    prepare: list => list.sort((a, b) => (b.created || 0) - (a.created || 0)),
-    row(it) {
-      const first = [...String(it.title || '?')][0];
-      return `<div class="item" data-id="${esc(it.id)}">
-        <div class="fav">${esc(first)}</div>
-        <div class="item-body">
-          <div class="item-title">${esc(it.title)}</div>
-          <div class="item-sub">${esc(hostOf(it.url))}${it.note ? ' · ' + esc(it.note) : ''}</div>
-        </div>
-        <button class="icon-btn" data-act="edit" aria-label="编辑">✎</button>
-      </div>`;
-    },
-  },
+    onDelete: t ? () => { db.todos = db.todos.filter(x => x !== t); } : null,
+  });
+}
+function moveToToday(t) { t.scope = 'day'; t.date = today(); t.rolled = (t.rolled || 0) + 1; }
 
-  countdowns: {
-    name: '倒计时', icon: '⏰',
-    fields: [
-      { key: 'name', label: '事件', required: true, placeholder: '例如：期末考试' },
-      { key: 'date', label: '日期', type: 'date', required: true },
-    ],
-    badge: list => list.filter(c => daysFromToday(c.date) >= 0).length,
-    prepare: list => list.sort((a, b) => {            // 未来的按近到远，过去的放后面
-      const da = daysFromToday(a.date), dbb = daysFromToday(b.date);
-      if ((da >= 0) !== (dbb >= 0)) return da >= 0 ? -1 : 1;
-      return da >= 0 ? da - dbb : dbb - da;
-    }),
-    row(it) {
-      const n = daysFromToday(it.date);
-      let cls = '', right;
-      if (n > 0) right = `<span>还有</span><b>${n}</b><span>天</span>`;
-      else if (n === 0) { cls = 'today'; right = '<b>就是今天</b>'; }
-      else { cls = 'past'; right = `<span>已过</span><b>${-n}</b><span>天</span>`; }
-      return `<div class="item ${cls}" data-id="${esc(it.id)}">
-        <div class="item-body"><div class="item-title">${esc(it.name)}</div><div class="item-sub">${esc(fmtDate(it.date))}</div></div>
-        <div class="cd">${right}</div>
-      </div>`;
-    },
-  },
-};
-
-/* ---------- 渲染 ---------- */
-let cur = TABS[localStorage.getItem(KEY + '-tab')] ? localStorage.getItem(KEY + '-tab') : 'progress';
-let editing = null;
-
-function render() {
-  $('nav').innerHTML = Object.entries(TABS).map(([k, t]) => {
-    const n = t.badge(db[k]);
-    return `<button class="nav-btn ${k === cur ? 'active' : ''}" data-tab="${k}">
-      <span class="ico">${t.icon}</span><span class="label">${t.name}</span>${n ? `<span class="badge">${n}</span>` : ''}
-    </button>`;
+/* ---------- notes ---------- */
+const matches = (q, ...fields) => !q || fields.some(s => String(s || '').toLowerCase().includes(q));
+function viewNotes() {
+  const q = $('search').value.trim().toLowerCase();
+  const list = db.notes.filter(n => matches(q, n.title, n.tag, n.content)).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  if (!list.length) return empty(db.notes.length ? 'No matches.' : 'No notes yet. Tap + to write one.');
+  return list.map(n => {
+    const pv = stripMd(n.content).slice(0, 200);
+    return `<div class="row" data-id="${esc(n.id)}"><div class="row-body">
+      <div class="t">${esc(n.title || 'Untitled')}</div>
+      ${pv ? `<div class="p">${esc(pv)}</div>` : ''}
+      <div class="s">${n.tag ? `<span class="tag">${esc(n.tag)}</span>` : ''}${esc(fmtStamp(n.updated || n.created))}</div>
+    </div></div>`;
   }).join('');
-  $('title').textContent = TABS[cur].name;
-  $('toolbar').hidden = cur !== 'notes';
-  renderList();
-  renderBackupHint();
-}
-function renderList() {
-  const t = TABS[cur], all = db[cur], items = t.prepare(all.slice());
-  listEl.innerHTML = items.length
-    ? items.map(it => t.row(it)).join('')
-    : `<div class="empty">${all.length ? '没有找到匹配的内容' : '这里还是空的<br>点右上角「＋ 新建」添加第一条'}</div>`;
-}
-function renderBackupHint() {
-  const t = +localStorage.getItem(KEY + '-lastExport');
-  const el = $('backupHint');
-  if (!t) { el.textContent = '还没备份过'; el.classList.add('warn'); return; }
-  const n = Math.floor((Date.now() - t) / 86400000);
-  el.textContent = n === 0 ? '今天已备份' : `上次备份：${n} 天前`;
-  el.classList.toggle('warn', n >= 7);
 }
 
-/* ---------- 编辑弹窗 ---------- */
-function fieldHTML(f, value) {
-  const v = esc(value ?? '');
-  const attrs = `id="f-${f.key}" name="${f.key}" placeholder="${esc(f.placeholder || '')}"`;
+/* ---------- progress ---------- */
+const itemPct = i => +i.total > 0 ? Math.min(100, Math.round((+i.current || 0) / +i.total * 100)) : 0;
+function folderPct(f) {
+  const xs = f.items.filter(i => +i.total > 0);
+  if (!xs.length) return null;
+  return Math.round(xs.reduce((s, i) => s + Math.min(1, (+i.current || 0) / +i.total), 0) / xs.length * 100);
+}
+function progRow(i) {
+  const p = itemPct(i);
+  return `<div class="row prow" data-id="${esc(i.id)}">
+    <div class="row-body">
+      <div class="line"><span class="t">${esc(i.name)}</span><span class="pct">${p}%</span></div>
+      <div class="bar"><i style="width:${p}%"></i></div>
+      <div class="s">${fmtNum(+i.current || 0)} / ${fmtNum(+i.total || 0)} ${esc(i.unit || '')}${p >= 100 ? ' · complete' : ''}</div>
+    </div>
+    <div class="step"><button class="sq" data-act="dec" aria-label="Minus one">−</button><button class="sq" data-act="inc" aria-label="Plus one">+</button></div>
+  </div>`;
+}
+function viewProgress() {
+  if (!db.folders.length) return empty('No folders yet. Tap + to add a subject.');
+  return db.folders.map(f => {
+    const p = folderPct(f), n = f.items.length;
+    return `<div class="folder ${f.open ? 'open' : ''}" data-fid="${esc(f.id)}">
+      <div class="frow" data-act="fold">
+        <span class="chev"></span><span class="fname">${esc(f.name)}</span>
+        <span class="s">${n} item${n === 1 ? '' : 's'}</span><span class="pct">${p === null ? '—' : p + '%'}</span>
+        <button class="sq" data-act="fadd" aria-label="Add item">+</button><button class="sq dots" data-act="fedit" aria-label="Edit folder">···</button>
+      </div>
+      <div class="bar"><i style="width:${p || 0}%"></i></div>
+      ${f.open ? `<div class="fitems">${n ? f.items.map(progRow).join('') : hintRow('Empty. Tap + to add an item.')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function folderForm(f) {
+  openForm({
+    title: f ? 'Edit folder' : 'New folder',
+    fields: [{ key: 'name', label: 'Subject', required: true, placeholder: 'e.g. Power Electronics' }],
+    values: { name: f ? f.name : '' },
+    onSave(v) {
+      if (f) f.name = v.name;
+      else db.folders.push({ id: uid(), name: v.name, open: true, items: [] });
+    },
+    onDelete: f ? () => { db.folders = db.folders.filter(x => x !== f); } : null,
+    deleteMsg: f && f.items.length ? `Delete this folder and its ${f.items.length} item(s)? This can't be undone.` : null,
+  });
+}
+function itemForm(f, it) {
+  openForm({
+    title: it ? 'Edit item' : `New item · ${f.name}`,
+    fields: [
+      { key: 'name', label: 'Name', required: true, placeholder: 'e.g. Chapter 3' },
+      { key: 'current', label: 'Done', type: 'number', placeholder: '0' },
+      { key: 'total', label: 'Total', type: 'number', required: true, placeholder: 'e.g. 12' },
+      { key: 'unit', label: 'Unit', placeholder: 'chapters / pages / lessons' },
+    ],
+    values: it ? { name: it.name, current: it.current, total: it.total, unit: it.unit } : { name: '', current: '', total: '', unit: '' },
+    onSave(v) {
+      if (!(v.total > 0)) return 'Total must be more than 0';
+      if (!(v.current >= 0)) return "Done can't be negative";
+      v.current = Math.min(v.current, v.total);
+      if (it) Object.assign(it, v); else f.items.push({ id: uid(), ...v });
+      f.open = true;
+    },
+    onDelete: it ? () => { f.items = f.items.filter(x => x !== it); } : null,
+  });
+}
+
+/* ---------- journal ---------- */
+function viewJournal() {
+  const td = today(), q = $('search').value.trim().toLowerCase();
+  const doneByDate = {};
+  for (const t of db.todos) if (t.done && t.doneDate) doneByDate[t.doneDate] = (doneByDate[t.doneDate] || 0) + 1;
+  let h = '';
+  if (!q && !db.journal.some(j => j.date === td)) {
+    h += `<div class="row cta" data-act="writeToday"><div class="row-body"><div class="t">Write today's entry</div><div class="s">${esc(fmtLong(td))}</div></div><span class="pct">+</span></div>`;
+  }
+  const list = db.journal.filter(j => matches(q, j.content)).sort((a, b) => b.date.localeCompare(a.date));
+  if (!list.length) return h + (db.journal.length ? empty('No matches.') : '');
+  let lastM = '';
+  for (const j of list) {
+    const d = toDate(j.date), m = `${MONTH[d.getMonth()]} ${d.getFullYear()}`;
+    if (m !== lastM) { h += sec(m); lastM = m; }
+    const pv = stripMd(j.content).slice(0, 200), n = doneByDate[j.date];
+    h += `<div class="row" data-id="${esc(j.id)}">
+      <div class="jday"><b>${pad(d.getDate())}</b><span>${DOW[d.getDay()]}</span></div>
+      <div class="row-body"><div class="p" style="margin-top:0">${pv ? esc(pv) : 'Empty'}</div>${n ? `<div class="s">${n} to-do${n === 1 ? '' : 's'} done</div>` : ''}</div>
+    </div>`;
+  }
+  return h;
+}
+function openJournal(date) {
+  let j = db.journal.find(x => x.date === date);
+  if (!j) { j = { id: uid(), date, content: '', created: Date.now(), updated: Date.now() }; db.journal.push(j); }
+  const blank = !String(j.content || '').trim();
+  openDoc('journal', j.id, blank, blank);
+}
+function journalPick() {
+  openForm({
+    title: 'Journal entry',
+    fields: [{ key: 'date', label: 'Date', type: 'date', required: true }],
+    values: { date: today() },
+    onSave(v) {
+      if (!validDate(v.date)) return 'Pick a date';
+      setTimeout(() => openJournal(v.date));
+    },
+  });
+}
+
+/* ---------- bookmarks ---------- */
+function viewBookmarks() {
+  if (!db.bookmarks.length) return empty('No bookmarks yet. Tap + to save a link.');
+  return db.bookmarks.slice().sort((a, b) => (b.created || 0) - (a.created || 0)).map(b => {
+    const first = ([...String(b.title || '')][0] || '?').toUpperCase();
+    return `<div class="row" data-id="${esc(b.id)}">
+      <div class="fav">${esc(first)}</div>
+      <div class="row-body"><div class="t">${esc(b.title)}</div><div class="s">${esc(hostOf(b.url))}${b.note ? ' · ' + esc(b.note) : ''}</div></div>
+      <button class="sq dots" data-act="edit" aria-label="Edit">···</button>
+    </div>`;
+  }).join('');
+}
+function bookmarkForm(b) {
+  openForm({
+    title: b ? 'Edit bookmark' : 'New bookmark',
+    fields: [
+      { key: 'title', label: 'Name', required: true },
+      { key: 'url', label: 'Link', required: true, url: true, placeholder: 'e.g. bilibili.com' },
+      { key: 'note', label: 'Note', placeholder: 'Optional' },
+    ],
+    values: b ? { title: b.title, url: b.url, note: b.note } : { title: '', url: '', note: '' },
+    onSave(v) {
+      const u = normalizeUrl(v.url);
+      if (!u) return 'That link doesn\'t look right. Example: https://example.com';
+      v.url = u;
+      if (b) Object.assign(b, v); else db.bookmarks.push({ id: uid(), created: Date.now(), ...v });
+    },
+    onDelete: b ? () => { db.bookmarks = db.bookmarks.filter(x => x !== b); } : null,
+  });
+}
+
+/* ---------- countdown ---------- */
+function viewCountdowns() {
+  if (!db.countdowns.length) return empty('No dates yet. Tap + to add one.');
+  const td = today();
+  const list = db.countdowns.filter(c => validDate(c.date)).map(c => ({ c, n: diffDays(td, c.date) }))
+    .sort((a, b) => (a.n >= 0) !== (b.n >= 0) ? (a.n >= 0 ? -1 : 1) : (a.n >= 0 ? a.n - b.n : b.n - a.n));
+  return list.map(({ c, n }) => {
+    const big = n === 0 ? 'TODAY' : Math.abs(n);
+    const lab = n > 0 ? (n === 1 ? 'DAY LEFT' : 'DAYS LEFT') : n < 0 ? (n === -1 ? 'DAY AGO' : 'DAYS AGO') : '';
+    return `<div class="row ${n === 0 ? 'hl' : ''} ${n < 0 ? 'past' : ''}" data-id="${esc(c.id)}">
+      <div class="row-body"><div class="t">${esc(c.name)}</div><div class="s">${esc(fmtLong(c.date))}</div></div>
+      <div class="cd"><b>${big}</b>${lab ? `<span>${lab}</span>` : ''}</div>
+    </div>`;
+  }).join('');
+}
+function countdownForm(c) {
+  openForm({
+    title: c ? 'Edit countdown' : 'New countdown',
+    fields: [
+      { key: 'name', label: 'Event', required: true, placeholder: 'e.g. Final exam' },
+      { key: 'date', label: 'Date', type: 'date', required: true },
+    ],
+    values: c ? { name: c.name, date: c.date } : { name: '', date: '' },
+    onSave(v) {
+      if (!validDate(v.date)) return 'Pick a date';
+      if (c) Object.assign(c, v); else db.countdowns.push({ id: uid(), created: Date.now(), ...v });
+    },
+    onDelete: c ? () => { db.countdowns = db.countdowns.filter(x => x !== c); } : null,
+  });
+}
+
+/* ---------- note / journal page ---------- */
+const MDBAR = [['h', 'H'], ['b', 'B'], ['i', 'I'], ['s', 'S'], ['ul', 'List'], ['task', 'Task'], ['quote', 'Quote'], ['code', 'Code'], ['link', 'Link'], ['img', 'Image']];
+function openDoc(kind, id, edit = false, fresh = false) {
+  doc = { kind, id, edit, fresh };
+  $('scroll').scrollTop = 0;
+  render();
+}
+const docRec = () => doc && db[doc.kind].find(x => x.id === doc.id);
+function closeDoc() {
+  flushSave();
+  const r = docRec();
+  if (r && !String(r.content || '').trim() && (doc.kind === 'journal' || !String(r.title || '').trim())) {
+    db[doc.kind] = db[doc.kind].filter(x => x !== r); // drop empty drafts
+    save();
+  }
+  doc = null;
+}
+function autosize(ta) {
+  const sc = $('scroll'), top = sc.scrollTop;
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+  sc.scrollTop = top;
+}
+function renderDoc() {
+  const r = docRec();
+  if (!r) { doc = null; return render(); }
+  const isNote = doc.kind === 'notes';
+  $('title').textContent = isNote ? 'Notes' : 'Journal';
+  $('sub').textContent = isNote ? `${r.tag ? r.tag.toUpperCase() + ' · ' : ''}EDITED ${fmtStamp(r.updated || r.created)}` : fmtLong(r.date);
+  $('headActions').innerHTML = '<button class="tbtn" data-act="back">Back</button>'
+    + (doc.edit ? '' : '<button class="tbtn danger" data-act="delDoc">Delete</button>')
+    + `<button class="tbtn main" data-act="${doc.edit ? 'read' : 'edit'}">${doc.edit ? 'Done' : 'Edit'}</button>`;
+  $('searchBar').hidden = true;
+  if (doc.edit) {
+    $('list').innerHTML = (isNote
+      ? `<input class="ed-title" id="edTitle" placeholder="Title" value="${esc(r.title)}"><input class="ed-tag" id="edTag" placeholder="Tag (optional)" value="${esc(r.tag)}">`
+      : `<div class="doc-title">${esc(fmtLong(r.date))}</div>`)
+      + `<div class="mdbar">${MDBAR.map(([k, l]) => `<button type="button" data-md="${k}">${l}</button>`).join('')}</div>`
+      + '<textarea class="ed-body" id="edBody" placeholder="Write in Markdown…"></textarea>';
+    const ta = $('edBody');
+    ta.value = r.content || '';
+    autosize(ta);
+    if (doc.fresh) { (isNote ? $('edTitle') : ta).focus(); doc.fresh = false; }
+    return;
+  }
+  let h = isNote ? `<div class="doc-title">${esc(r.title || 'Untitled')}</div>` : '';
+  h += String(r.content || '').trim() ? `<article class="md">${md(r.content)}</article>` : empty('Empty. Tap Edit to write.');
+  if (!isNote) {
+    const done = db.todos.filter(t => t.done && t.doneDate === r.date);
+    if (done.length) h += sec('Done that day', done.length) + `<ul class="done-list">${done.map(t => `<li>${esc(t.text)}</li>`).join('')}</ul>`;
+  }
+  $('list').innerHTML = h;
+  fillImages($('list'));
+}
+function replaceRange(ta, start, end, text, selS, selE) {
+  ta.focus();
+  ta.setRangeText(text, start, end);
+  ta.setSelectionRange(selS, selE);
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+}
+function wrapSel(ta, a, b, ph) {
+  const s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e) || ph;
+  replaceRange(ta, s, e, a + sel + b, s + a.length, s + a.length + sel.length);
+}
+function linePrefix(ta, p) {
+  const s = ta.selectionStart, e = ta.selectionEnd, ls = ta.value.lastIndexOf('\n', s - 1) + 1;
+  replaceRange(ta, ls, ls, p, s + p.length, e + p.length);
+}
+function mdAction(k) {
+  const ta = $('edBody');
+  if (!ta) return;
+  const multi = ta.value.slice(ta.selectionStart, ta.selectionEnd).includes('\n');
+  switch (k) {
+    case 'h': return linePrefix(ta, '## ');
+    case 'b': return wrapSel(ta, '**', '**', 'bold');
+    case 'i': return wrapSel(ta, '*', '*', 'italic');
+    case 's': return wrapSel(ta, '~~', '~~', 'text');
+    case 'ul': return linePrefix(ta, '- ');
+    case 'task': return linePrefix(ta, '- [ ] ');
+    case 'quote': return linePrefix(ta, '> ');
+    case 'code': return multi ? wrapSel(ta, '\n```\n', '\n```\n', 'code') : wrapSel(ta, '`', '`', 'code');
+    case 'link': return wrapSel(ta, '[', '](https://)', 'text');
+    case 'img': return $('imgInput').click();
+  }
+}
+async function insertImages(files) {
+  const ta = $('edBody');
+  if (!ta) return;
+  for (const f of files) {
+    if (f.type && !f.type.startsWith('image/')) continue;
+    try {
+      const id = await putImage(await compressImage(f));
+      if (!ta.isConnected) return;
+      const s = ta.selectionStart, e = ta.selectionEnd;
+      const txt = `${s > 0 && ta.value[s - 1] !== '\n' ? '\n' : ''}![](img:${id})\n`;
+      replaceRange(ta, s, e, txt, s + txt.length, s + txt.length);
+    } catch (err) {
+      alert('Could not add image: ' + (err && err.message || err));
+    }
+  }
+}
+function docClick(e) {
+  const mb = e.target.closest('[data-md]');
+  if (mb) return mdAction(mb.dataset.md);
+  const box = e.target.closest('.tbox');
+  if (box && !doc.edit) {
+    const r = docRec();
+    if (!r) return;
+    const lines = String(r.content || '').split('\n'), i = +box.dataset.line;
+    if (lines[i] === undefined) return;
+    lines[i] = lines[i].replace(/\[([ xX])\]/, m => m === '[ ]' ? '[x]' : '[ ]');
+    r.content = lines.join('\n');
+    r.updated = Date.now();
+    save(); render();
+  }
+}
+
+/* ---------- modal form ---------- */
+function fieldHTML(f) {
+  const v = form.values[f.key] ?? '';
+  const ph = esc(f.placeholder || '');
   let input;
-  if (f.type === 'textarea') input = `<textarea ${attrs}>${v}</textarea>`;
-  else if (f.type === 'number') input = `<input ${attrs} type="number" inputmode="decimal" step="any" min="0" value="${v}">`;
-  else if (f.type === 'date') input = `<input ${attrs} type="date" value="${v}">`;
-  else input = `<input ${attrs} type="text" value="${v}"${f.inputmode ? ` inputmode="${f.inputmode}" autocapitalize="off" autocorrect="off" spellcheck="false"` : ''}>`;
-  return `<div class="field"><label for="f-${f.key}">${esc(f.label)}${f.required ? ' *' : ''}</label>${input}</div>`;
+  if (f.type === 'seg') {
+    input = `<div class="seg" data-seg="${f.key}">${f.options.map(([val, lab]) => `<button type="button" data-val="${esc(val)}" class="${val === v ? 'on' : ''}">${esc(lab)}</button>`).join('')}</div>`;
+  } else if (f.type === 'number') {
+    input = `<input id="f-${f.key}" type="number" inputmode="decimal" step="any" min="0" value="${esc(v)}" placeholder="${ph}">`;
+  } else if (f.type === 'date') {
+    input = `<input id="f-${f.key}" type="date" value="${esc(v)}">`;
+  } else {
+    const extra = f.url ? ' inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"' : '';
+    input = `<input id="f-${f.key}" type="text" value="${esc(v)}" placeholder="${ph}"${extra}>`;
+  }
+  return `<div class="field" data-field="${f.key}"><label${f.type === 'seg' ? '' : ` for="f-${f.key}"`}>${esc(f.label)}</label>${input}</div>`;
 }
-function openEditor(item) {
-  editing = item;
-  const t = TABS[cur];
-  $('sheetTitle').textContent = `${item ? '编辑' : '新建'} · ${t.name}`;
-  $('fields').innerHTML = t.fields.map(f => fieldHTML(f, item ? item[f.key] : '')).join('');
-  $('delBtn').hidden = !item;
+function readForm() {
+  for (const f of form.fields) {
+    if (f.type === 'seg') continue;
+    const el = $('f-' + f.key);
+    if (el) form.values[f.key] = el.value;
+  }
+}
+function syncForm() {
+  for (const f of form.fields) {
+    if (f.showIf) $('fields').querySelector(`[data-field="${f.key}"]`).hidden = !f.showIf(form.values);
+  }
+}
+function openForm(cfg) {
+  form = { ...cfg, values: { ...cfg.values } };
+  $('sheetTitle').textContent = cfg.title;
+  $('fields').innerHTML = cfg.fields.map(fieldHTML).join('');
+  $('delBtn').hidden = !cfg.onDelete;
+  syncForm();
   $('mask').classList.add('show');
-  if (!item) $('fields').querySelector('input, textarea').focus();
+  const first = $('fields').querySelector('input[type=text]');
+  if (first && !first.value) first.focus();
 }
-function closeEditor() { $('mask').classList.remove('show'); editing = null; }
-
+function closeForm() { $('mask').classList.remove('show'); form = null; }
+$('fields').addEventListener('click', e => {
+  const b = e.target.closest('.seg button');
+  if (!b || !form) return;
+  const seg = b.parentElement;
+  form.values[seg.dataset.seg] = b.dataset.val;
+  seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  readForm(); syncForm();
+});
 $('sheet').addEventListener('submit', e => {
   e.preventDefault();
-  const t = TABS[cur], form = new FormData(e.target), data = {};
-  for (const f of t.fields) {
-    let v = String(form.get(f.key) ?? '');
-    v = f.type === 'textarea' ? v.replace(/\s+$/, '') : v.trim();
-    if (f.required && !v) return alert(`「${f.label}」还没填`);
-    data[f.key] = f.type === 'number' ? (v === '' ? 0 : Number(v)) : v;
+  if (!form) return;
+  readForm();
+  const v = {};
+  for (const f of form.fields) {
+    const hiddenField = f.showIf && !f.showIf(form.values);
+    const x = String(form.values[f.key] ?? '').trim();
+    if (f.required && !x && !hiddenField) return alert(`${f.label} is required`);
+    v[f.key] = f.type === 'number' ? (x === '' ? 0 : Number(x)) : x;
   }
-  const err = t.check && t.check(data);
+  const err = form.onSave(v);
   if (err) return alert(err);
-  const now = Date.now();
-  if (editing) Object.assign(editing, data, { updated: now });
-  else db[cur].push({ id: uid(), created: now, updated: now, ...(cur === 'todos' ? { done: false } : {}), ...data });
-  save(); closeEditor(); render();
+  save(); closeForm(); render();
 });
-$('cancelBtn').onclick = closeEditor;
+$('cancelBtn').onclick = closeForm;
 $('delBtn').onclick = () => {
-  if (!editing || !confirm('确定删除这一条吗？删除后找不回来。')) return;
-  db[cur] = db[cur].filter(x => x !== editing);
-  save(); closeEditor(); render();
+  if (!form || !form.onDelete) return;
+  if (!confirm(form.deleteMsg || "Delete this? This can't be undone.")) return;
+  form.onDelete();
+  save(); closeForm(); render();
 };
 
-/* ---------- 点击操作 ---------- */
+/* ---------- render ---------- */
+const VIEWS = { todos: viewTodos, notes: viewNotes, progress: viewProgress, journal: viewJournal, bookmarks: viewBookmarks, countdowns: viewCountdowns };
+function subtitle(tab) {
+  const td = today(), n = k => db[k].length;
+  switch (tab) {
+    case 'todos': return `${fmtLong(td)} · W${isoWeek(td)}`;
+    case 'notes': return `${n('notes')} NOTES`;
+    case 'progress': return `${n('folders')} FOLDERS`;
+    case 'journal': return `${n('journal')} ENTRIES`;
+    case 'bookmarks': return `${n('bookmarks')} LINKS`;
+    case 'countdowns': return `${db.countdowns.filter(c => validDate(c.date) && diffDays(td, c.date) >= 0).length} UPCOMING`;
+  }
+}
+function renderNav() {
+  const td = today(), wk = mondayOf(td);
+  const counts = {
+    todos: db.todos.filter(t => ['overdue', 'today', 'week'].includes(bucket(t, td, wk))).length,
+    notes: db.notes.length, progress: db.folders.length, journal: 0, bookmarks: db.bookmarks.length,
+    countdowns: db.countdowns.filter(c => validDate(c.date) && diffDays(td, c.date) >= 0).length,
+  };
+  $('nav').innerHTML = TABS.map(([k, name]) => `<button class="nav-btn ${k === ui.tab ? 'active' : ''}" data-tab="${k}"><span>${name}</span>${counts[k] ? `<span class="n">${counts[k]}</span>` : ''}</button>`).join('');
+}
+function renderBackupHint() {
+  const t = +localStorage.getItem(EXPORT_KEY), el = $('backupHint');
+  if (!t) { el.textContent = 'Never backed up'; el.classList.add('warn'); return; }
+  const n = Math.floor((Date.now() - t) / 86400000);
+  el.textContent = n === 0 ? 'Backed up today' : `Last backup: ${n}d ago`;
+  el.classList.toggle('warn', n >= 7);
+}
+function render() {
+  renderNav();
+  renderBackupHint();
+  if (doc) return renderDoc();
+  const t = ui.tab;
+  $('title').textContent = TAB_NAME[t];
+  $('sub').textContent = subtitle(t);
+  $('headActions').innerHTML = '<button class="plus" data-act="new" aria-label="New"></button>';
+  $('searchBar').hidden = !(t === 'notes' || t === 'journal');
+  $('list').innerHTML = VIEWS[t]();
+}
+
+/* ---------- events ---------- */
+function newItem() {
+  switch (ui.tab) {
+    case 'todos': return todoForm(null);
+    case 'notes': {
+      const n = { id: uid(), title: '', tag: '', content: '', created: Date.now(), updated: Date.now() };
+      db.notes.push(n);
+      return openDoc('notes', n.id, true, true);
+    }
+    case 'progress': return folderForm(null);
+    case 'journal': return journalPick();
+    case 'bookmarks': return bookmarkForm(null);
+    case 'countdowns': return countdownForm(null);
+  }
+}
+
 $('nav').addEventListener('click', e => {
   const b = e.target.closest('[data-tab]');
   if (!b) return;
-  cur = b.dataset.tab;
-  localStorage.setItem(KEY + '-tab', cur);
-  listEl.scrollTop = 0;
+  if (doc) closeDoc();
+  ui.tab = b.dataset.tab;
+  saveUI();
+  $('search').value = '';
+  $('scroll').scrollTop = 0;
   render();
 });
-$('addBtn').onclick = () => openEditor(null);
-searchEl.addEventListener('input', renderList);
 
-listEl.addEventListener('click', e => {
-  const el = e.target.closest('.item');
-  if (!el) return;
-  const it = db[cur].find(x => x.id === el.dataset.id);
-  if (!it) return;
-  const actEl = e.target.closest('[data-act]');
-  const act = actEl ? actEl.dataset.act : null;
-
-  if (act === 'inc' || act === 'dec') {
-    const total = +it.total || 0;
-    it.current = Math.max(0, Math.min(total, (+it.current || 0) + (act === 'inc' ? 1 : -1)));
-    it.updated = Date.now();
-    save(); render(); return;
+$('headActions').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'new') return newItem();
+  if (!doc) return;
+  if (act === 'back') { closeDoc(); return render(); }
+  if (act === 'edit') { doc.edit = true; return render(); }
+  if (act === 'read') { flushSave(); doc.edit = false; $('scroll').scrollTop = 0; return render(); }
+  if (act === 'delDoc') {
+    if (!confirm("Delete this? This can't be undone.")) return;
+    const r = docRec();
+    db[doc.kind] = db[doc.kind].filter(x => x !== r);
+    doc = null;
+    save(); render();
   }
-  if (act === 'toggle') {
-    it.done = !it.done; it.updated = Date.now();
-    save(); render(); return;
-  }
-  if (cur === 'bookmarks' && act !== 'edit') {
-    if (/^https?:\/\//i.test(it.url)) window.open(it.url, '_blank', 'noopener');
-    return;
-  }
-  openEditor(it);
 });
 
-/* ---------- 导出 / 导入 ---------- */
-$('exportBtn').onclick = async () => {
-  const json = JSON.stringify({ app: 'study-dashboard', version: 1, exportedAt: new Date().toISOString(), data: db }, null, 2);
-  const name = `学习仪表盘备份-${todayStr()}.json`;
-  const file = new File([json], name, { type: 'application/json' });
-  const done = () => { localStorage.setItem(KEY + '-lastExport', Date.now()); renderBackupHint(); };
+$('list').addEventListener('click', e => {
+  if (doc) return docClick(e);
+  const actEl = e.target.closest('[data-act]');
+  const act = actEl ? actEl.dataset.act : null;
+  const tab = ui.tab;
+  const row = e.target.closest('.row[data-id]');
 
+  if (tab === 'todos') {
+    if (act === 'allToday') {
+      const td = today(), wk = mondayOf(td);
+      db.todos.filter(x => bucket(x, td, wk) === 'overdue').forEach(moveToToday);
+      save(); return render();
+    }
+    if (act === 'toggleDone') { ui.doneOpen = !ui.doneOpen; saveUI(); return render(); }
+    if (!row) return;
+    const t = db.todos.find(x => x.id === row.dataset.id);
+    if (!t) return;
+    if (act === 'check') {
+      t.done = !t.done;
+      t.doneDate = t.done ? today() : null;
+      t.doneAt = t.done ? Date.now() : 0;
+      save(); return render();
+    }
+    if (act === 'toToday') { moveToToday(t); save(); return render(); }
+    if (act === 'drop') {
+      if (confirm('Drop this to-do?')) { db.todos = db.todos.filter(x => x !== t); save(); render(); }
+      return;
+    }
+    return todoForm(t);
+  }
+
+  if (tab === 'progress') {
+    const fe = e.target.closest('.folder');
+    if (!fe) return;
+    const f = db.folders.find(x => x.id === fe.dataset.fid);
+    if (!f) return;
+    if (act === 'fadd') return itemForm(f, null);
+    if (act === 'fedit') return folderForm(f);
+    if (act === 'fold') { f.open = !f.open; save(); return render(); }
+    if (!row) return;
+    const it = f.items.find(x => x.id === row.dataset.id);
+    if (!it) return;
+    if (act === 'inc' || act === 'dec') {
+      const total = +it.total || 0;
+      it.current = Math.max(0, Math.min(total, (+it.current || 0) + (act === 'inc' ? 1 : -1)));
+      save(); return render();
+    }
+    return itemForm(f, it);
+  }
+
+  if (tab === 'journal') {
+    if (act === 'writeToday') return openJournal(today());
+    if (row) openDoc('journal', row.dataset.id);
+    return;
+  }
+  if (!row) return;
+  const id = row.dataset.id;
+  if (tab === 'notes') return openDoc('notes', id);
+  if (tab === 'bookmarks') {
+    const b = db.bookmarks.find(x => x.id === id);
+    if (!b) return;
+    if (act === 'edit') return bookmarkForm(b);
+    const u = safeHref(b.url);
+    if (u) window.open(u, '_blank', 'noopener');
+    return;
+  }
+  if (tab === 'countdowns') {
+    const c = db.countdowns.find(x => x.id === id);
+    if (c) countdownForm(c);
+  }
+});
+
+// autosave while typing in a note / journal entry
+$('list').addEventListener('input', e => {
+  if (!doc || !doc.edit) return;
+  const r = docRec();
+  if (!r) return;
+  const id = e.target.id;
+  if (id === 'edBody') { r.content = e.target.value; autosize(e.target); }
+  else if (id === 'edTitle') r.title = e.target.value;
+  else if (id === 'edTag') r.tag = e.target.value;
+  else return;
+  r.updated = Date.now();
+  queueSave();
+});
+
+// paste images straight into the editor
+$('list').addEventListener('paste', e => {
+  if (!doc || !doc.edit || e.target.id !== 'edBody') return;
+  const items = e.clipboardData ? [...e.clipboardData.items] : [];
+  const files = items.filter(i => i.kind === 'file' && i.type.startsWith('image/')).map(i => i.getAsFile()).filter(Boolean);
+  if (!files.length) return;
+  e.preventDefault();
+  insertImages(files);
+});
+$('imgInput').onchange = e => {
+  const files = [...e.target.files];
+  e.target.value = '';
+  insertImages(files);
+};
+
+$('search').addEventListener('input', () => {
+  if (!doc) $('list').innerHTML = VIEWS[ui.tab]();
+});
+
+/* ---------- export / import ---------- */
+let pendingExport = null;
+async function buildBackup() {
+  flushSave();
+  const ids = new Set();
+  const scan = s => { for (const m of String(s || '').matchAll(/img:([\w-]+)/g)) ids.add(m[1]); };
+  db.notes.forEach(n => scan(n.content));
+  db.journal.forEach(j => scan(j.content));
+  const images = {};
+  for (const id of ids) { const v = await getImage(id); if (v) images[id] = v; }
+  return { app: 'clawd', version: 2, exportedAt: new Date().toISOString(), data: db, images };
+}
+function closeExport() { $('exportMask').classList.remove('show'); pendingExport = null; }
+
+$('exportBtn').onclick = async () => {
+  try {
+    const data = await buildBackup();
+    const json = JSON.stringify(data);
+    const name = `clawd-backup-${today()}.json`;
+    pendingExport = new File([json], name, { type: 'application/json' });
+    const kb = json.length / 1024;
+    const size = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.ceil(kb) + ' KB';
+    const n = Object.keys(data.images).length;
+    $('exportMsg').innerHTML = `${esc(name)}<br>${size} · ${n} image${n === 1 ? '' : 's'}<br><br>In the share sheet, choose "Save to Files".`;
+    $('exportMask').classList.add('show');
+  } catch (err) {
+    alert('Export failed: ' + (err && err.message || err));
+  }
+};
+$('exportCancel').onclick = closeExport;
+$('exportSave').onclick = async () => {
+  const file = pendingExport;
+  if (!file) return;
+  const done = () => { localStorage.setItem(EXPORT_KEY, Date.now()); renderBackupHint(); closeExport(); };
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file] }); done(); return; }
+    try { await navigator.share({ files: [file] }); return done(); }
     catch (e) { if (e.name === 'AbortError') return; }
   }
+  const url = URL.createObjectURL(file);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(file);
-  a.download = name;
+  a.href = url;
+  a.download = file.name;
   document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   done();
 };
+
 $('importBtn').onclick = () => $('fileInput').click();
 $('fileInput').onchange = async e => {
   const f = e.target.files[0];
   e.target.value = '';
   if (!f) return;
+  let parsed;
+  try { parsed = JSON.parse(await f.text()); }
+  catch { return alert("Can't read this file. Pick a .json backup exported from this app."); }
+  const isV2 = parsed && parsed.app === 'clawd';
+  const next = isV2 ? normalize(parsed.data) : normalize(migrateV1(parsed));
+  const images = isV2 && parsed.images && typeof parsed.images === 'object' ? parsed.images : {};
+  const count = ['todos', 'notes', 'folders', 'journal', 'bookmarks', 'countdowns'].reduce((s, k) => s + next[k].length, 0);
+  if (!count) return alert('No records found in this file.');
+  if (!confirm(`This backup has ${count} records.\nImporting replaces everything in the app now. Continue?`)) return;
   try {
-    const parsed = JSON.parse(await f.text());
-    const next = normalize(parsed && parsed.data ? parsed.data : parsed);
-    const count = Object.values(next).reduce((s, arr) => s + arr.length, 0);
-    if (!confirm(`备份里共有 ${count} 条记录。\n导入会覆盖当前所有数据，确定吗？`)) return;
-    db = next; save(); render();
-  } catch {
-    alert('这个文件读不了，请确认选的是导出的 .json 备份文件');
+    for (const [id, v] of Object.entries(images)) {
+      if (/^[\w-]+$/.test(id) && typeof v === 'string' && /^data:image\/(jpeg|png|webp|gif);base64,/.test(v)) {
+        await store.put('images', id, v);
+        imgCache.set(id, v);
+      }
+    }
+    doc = null;
+    db = next;
+    await save();
+    render();
+    alert('Import done.');
+  } catch (err) {
+    alert('Import failed: ' + (err && err.message || err));
   }
 };
 
-// 从后台切回来时刷新（比如第二天打开，倒计时天数会更新）
-document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+/* ---------- start ---------- */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) flushSave();
+  else if (!(doc && doc.edit)) render(); // refresh dates when coming back next day
+});
+window.addEventListener('pagehide', flushSave);
 
-render();
+async function init() {
+  try {
+    const saved = await store.get('kv', 'db');
+    if (saved) db = normalize(saved);
+    else {
+      const old = localStorage.getItem(OLD_KEY);
+      if (old) { db = normalize(migrateV1(safeJSON(old))); await save(); }
+    }
+  } catch (e) {
+    alert('Could not open storage. Data will not be saved this session.\n' + (e && e.message || e));
+  }
+  if (!TAB_NAME[ui.tab]) ui.tab = 'todos';
+  render();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+init();
 </script>
 </body>
 </html>
